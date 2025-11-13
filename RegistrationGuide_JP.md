@@ -164,10 +164,7 @@ MultiStackReg による自動位置合わせ後でも、
 ✔ 全画像への一括適用
 ✔ クロップも一括適用可能
 
-🔗 **AlignRef の使い方（日本語）**  
-
-👉 [こちら](https://github.com/SatoruMuro/AlignRef/blob/main/README_JP.md)
-
+🔗 **[AlignRef の使い方（日本語）](https://github.com/SatoruMuro/AlignRef/blob/main/README_JP.md)**  
 
 ---
 
