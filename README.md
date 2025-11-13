@@ -1,5 +1,7 @@
 # AlignRef
 
+👉 **日本語版はこちら:** [README_JP.md](./README_JP.md)  
+
 **AlignRef** is a lightweight desktop application for interactive alignment and preprocessing of serial images  
 (e.g., histological sections, CT/MRI slices, or photographic image sequences).
 
