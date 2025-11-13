@@ -5,8 +5,6 @@
 > 🌐 **English version available here:**
 > [README.md](https://github.com/SatoruMuro/AlignRef/blob/main/README.md)  
 
-## ✔ 日本語版（README 用）
-
 **AlignRef** は、連続画像（組織連続切片、CT/MRI スライス、連続写真など）の  
 **位置合わせや前処理をインタラクティブに行うための軽量デスクトップアプリ**です。
 
