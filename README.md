@@ -16,6 +16,20 @@ It provides:
 
 ---
 
+> **Important — Before Using AlignRef**
+> 
+> AlignRef is designed as a **post-registration fine-adjustment tool**.  
+> For serial histological sections, please perform **automatic registration** first  
+> using ImageJ/Fiji + MultiStackReg.
+> 
+> 👉 **Registration Guide (English)**  
+> https://github.com/SatoruMuro/AlignRef/blob/main/RegistrationGuide.md
+> 
+> 👉 **Registration Guide (Japanese / 日本語)**  
+> https://github.com/SatoruMuro/AlignRef/blob/main/RegistrationGuide_JP.md
+
+---
+
 ## 📦 Download
 
 👉 **Direct download (ZIP)**  
