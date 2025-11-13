@@ -3,7 +3,7 @@
 ---
 
 > 🌐 **English version available here:**
-> README.md (英語版 README へのリンクを GitHub 側で設定してください)
+> [README.md](https://github.com/SatoruMuro/AlignRef/blob/main/README.md)  
 
 ---
 
