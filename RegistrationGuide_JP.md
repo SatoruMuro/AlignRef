@@ -1,1 +1,173 @@
+# 連続切片の位置合わせガイド（MultiStackReg + AlignRef）
+
+このページでは、組織連続切片（serial histological sections）の**自動位置合わせ（Registration）**を行う方法をまとめています。
+AlignRef は、**MultiStackReg などで自動位置合わせを行った “後に”** 微調整目的で使用するツールです。
+そのため、このページは AlignRef の README からリンクされる「前処理ガイド」として機能します。
+
+---
+
+# 🔍 連続切片では位置合わせが必須
+
+組織連続切片の場合、**セグメンテーションを行う前に位置合わせ（Registration）が必要**になります。
+まず専用ツール MultiStackReg を使って自動位置合わせを行い、その後 AlignRef で微調整を行う流れが推奨です。
+
+---
+
+# 🧰 MultiStackReg とは？
+
+MultiStackReg は、ImageJ/Fiji のプラグインで、連続切片の位置合わせを自動で行うツールです。
+
+📎 GitHub: [https://github.com/miura/MultiStackRegistration](https://github.com/miura/MultiStackRegistration)
+
+---
+
+# 🎥 操作デモ動画（YouTube）
+
+### **📌 ImageJ/Fiji Tutorial: Registration using MultiStackReg**
+
+[https://youtu.be/bWF2HW5yjOI](https://youtu.be/bWF2HW5yjOI)
+
+<a href="https://youtu.be/bWF2HW5yjOI">
+  <img src="https://github.com/SatoruMuro/SAM2GUIfor3Drecon/blob/main/images/watchvideoicon1.png" width="110">
+</a>
+
+### **📌 ImageJ/Fiji Tutorial: How to Crop an Image Sequence**
+
+[https://youtu.be/Rx8TdUN40ig](https://youtu.be/Rx8TdUN40ig)
+
+<a href="https://youtu.be/Rx8TdUN40ig">
+  <img src="https://github.com/SatoruMuro/SAM2GUIfor3Drecon/blob/main/images/watchvideoicon1.png" width="110">
+</a>
+
+---
+
+# 📥 Fiji のダウンロード（ImageJ 拡張版）
+
+Fiji は ImageJ の強化版で、プラグインが多数プリインストールされています。
+
+🔗 **ダウンロードページ:** [https://fiji.sc/](https://fiji.sc/)
+
+### ✔ インストール手順
+
+1. Fiji をダウンロードして解凍する
+2. 生成されたフォルダ「Fiji.app」を **C ドライブ直下に置く（推奨）**
+3. Windows の場合、`ImageJ-win64.exe` を起動
+4. タスクバーにピン留めしておくと便利
+
+---
+
+# 🔧 MultiStackReg と TurboReg のインストール
+
+MultiStackReg の実行には TurboReg も必要です。
+
+<img src="https://github.com/SatoruMuro/SAM2GUIfor3Drecon/blob/main/images/MultiStackRegInstall.png" width="70%">
+
+### ✔ インストール方法
+
+1. Fiji を起動 → **Help > Update...** を選択
+2. ImageJ Updater が開いたら **Manage Update Sites** をクリック
+3. 検索窓に「multistackreg」と入力 → チェックを付ける
+4. TurboReg は **BIG-EPFL** に含まれているのでこれも検索してチェック
+5. **Apply and Close → Apply Changes**
+6. Fiji を再起動
+
+### ✔ 確認
+
+`Plugins > Registration` の中に、
+
+* MultiStackReg
+* TurboReg
+
+が表示されていればインストール完了です。
+
+---
+
+# 🔄 位置合わせの手順（MultiStackReg）
+
+### ✔ 準備
+
+1. 連続切片画像を 1 つのフォルダにまとめる
+2. ファイル名は **番号 + 同じ桁数**（例：image0001.jpg）にする
+
+### ✔ 手順
+
+1. Fiji → **File > Import > Image Sequence...**
+2. 画像フォルダを選択し、**Sort names numerically** にチェック
+3. RGB チャンネルを分割する（MultiStackReg はカラーを扱えないため）
+
+   * **Image > Color > Split Channels**
+   * (red) (green) (blue) の3つのスタックに分割される
+
+### ✔ MultiStackReg の実行
+
+<img src="https://github.com/SatoruMuro/SAM2GUIfor3Drecon/blob/main/images/MultiStackReg.png" width="70%">
+
+1. Plugins > Registration > **MultiStackReg**
+2. **Stack 1** に (blue) を選択（どれでも良いが blue が推奨）
+3. **Action 1 → Align**
+4. **Transformation → Rigid Body**
+5. **Save Transformation File** にチェック
+6. OK を押して実行
+
+### ✔ 残りのチャンネルに同じ変換を適用
+
+1. 再び MultiStackReg を開く
+2. 今度は (green) を Stack 1 に選択
+3. **Action 1 → Load Transformation File**
+4. 保存した `TransformationMatrices.txt` を読み込む
+5. (red) に対しても同様に実行
+
+### ✔ RGB に再結合
+
+1. **Image > Color > Merge Channels**
+2. C1(red), C2(green), C3(blue) にそれぞれを割り当て
+3. **Create composite のチェックを外す**
+4. **Keep source images にチェック**
+5. OK → RGB スタックが完成
+
+### ✔ 書き出し
+
+**File > Save As > Image Sequence...**
+
+* Format: JPEG など
+* Name: image
+* Start At: 1
+* Digits: 3–4 桁
+
+これで位置合わせ完了です！
+
+---
+
+# 📚 MultiStackReg の研究利用について
+
+研究で MultiStackReg を使用する場合、**引用または謝辞の記載が必要**です。
+
+詳細：
+[https://github.com/miura/MultiStackRegistration](https://github.com/miura/MultiStackRegistration)
+
+---
+
+# 🧩 AlignRef は「微調整」専用ツール
+
+MultiStackReg による自動位置合わせ後でも、
+
+* わずかなズレ
+* 切片の傾き
+* セグメンテーションに影響する違和感
+
+などが残ることがあります。
+
+そのような場合に使うのが **AlignRef** です。
+
+✔ キーボードで高速に移動・回転
+✔ 前後画像のオーバーレイ確認
+✔ 全画像への一括適用
+✔ クロップも一括適用可能
+
+🔗 **AlignRef の使い方（日本語）**  
+
+👉 [こちら](https://github.com/SatoruMuro/AlignRef/blob/main/README_JP.md)
+
+
+---
 
