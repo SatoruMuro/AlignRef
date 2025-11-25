@@ -26,7 +26,7 @@
 > 
 > AlignRef は、MultiStackReg などで **自動位置合わせを行った後に使う微調整ツール**です。  
 > 組織連続切片を扱う場合は、まず ImageJ/Fiji + MultiStackReg により  
-> **自動位置合わせ（Registration）**を行ってください。
+> 自動位置合わせ（Registration）を行ってください。
 > 
 > 👉 **位置合わせガイド（英語 / English）**  
 > https://github.com/SatoruMuro/AlignRef/blob/main/RegistrationGuide.md
