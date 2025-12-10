@@ -221,7 +221,7 @@ Contributions, bug reports, and feature requests are welcome via **GitHub Issues
 
 ---
 
-### Citation
+## Citation
 
 If you use **AlignRef** in your academic work, please cite:
 
