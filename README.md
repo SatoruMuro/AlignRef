@@ -221,3 +221,12 @@ Contributions, bug reports, and feature requests are welcome via **GitHub Issues
 
 ---
 
+### Citation
+
+If you use **AlignRef** in your academic work, please cite:
+
+**Muro S, Ibara T, Nimura A, et al.**
+*Two-Step Workflow Integrating Automatic Registration and Manual Refinement for the Accurate Alignment of Serial Histological Sections in 3D Reconstruction.*
+Research Square, Preprint Version 1, 09 Dec 2025.
+DOI: **10.21203/rs.3.rs-8314237/v1**
+
