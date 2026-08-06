@@ -168,4 +168,4 @@ inputname_aligned_20251113_123456
 
 本ソフトウェア **AlignRef** を研究に利用した場合は、以下の文献を引用してください。
 
-Satoru Muro, Takuya Ibara, Akimoto Nimura et al. Two-Step Workflow Integrating Automatic Registration and Manual Refinement for the Accurate Alignment of Serial Histological Sections in 3D Reconstruction, 09 December 2025, PREPRINT (Version 1) available at Research Square [https://doi.org/10.21203/rs.3.rs-8314237/v1]
+Muro, S., Ibara, T., Nimura, A. & Akita, K. (2026) Two-step workflow integrating automatic registration and manual refinement for the accurate alignment of serial histological sections in 3D reconstruction. Journal of Anatomy, 00, 1–6. Available from: https://doi.org/10.1111/joa.70203
