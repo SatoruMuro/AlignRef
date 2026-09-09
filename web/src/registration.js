@@ -223,11 +223,11 @@ export function registerRigid(fixed, moving) {
       [0.125, 0.025],
     ]);
   }
-  if (best.score < 0.35)
-    throw new Error(
-      "Insufficient image similarity or texture. Choose another channel or align manually.",
-    );
   const matrix = rigid(...best.p, fixed.width / 2, fixed.height / 2);
+  if (best.score < 0.35)
+    throw Object.assign(new Error(
+      "Insufficient image similarity or texture. Choose another channel or align manually.",
+    ), { estimatedTransform: matrix, score: best.score });
   return {
     matrix,
     score: best.score,

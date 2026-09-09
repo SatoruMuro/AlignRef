@@ -7,9 +7,10 @@ import {
   normalizeCrop,
   validRigid,
 } from "./geometry.js";
-export function createState(images) {
+export function createState(images, dataset = null) {
   const canvas = canvasSize(images);
   return {
+    dataset,
     canvas,
     background: "white",
     viewport: { x: 0, y: 0, ...canvas },
@@ -82,6 +83,7 @@ export class History {
 }
 export function serialize(state) {
   return {
+    dataset: state.dataset,
     app: "AlignRef2",
     version: 1,
     coordinates:

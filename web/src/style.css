@@ -327,6 +327,15 @@ footer {
 a {
   color: var(--blue);
 }
+.demo-entry {
+  margin: 14px 0;
+  padding: 12px 0;
+  border-top: 1px solid #334052;
+  border-bottom: 1px solid #334052;
+}
+.demo-entry p { margin: 8px 0; }
+#demo-export-notice { color: #dfc18c; }
+#registration-warnings { white-space: pre-line; max-height: 220px; overflow: auto; }
 .recording {
   box-shadow: inset 0 0 0 2px #dfab68;
 }

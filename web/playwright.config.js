@@ -7,6 +7,8 @@ export default defineConfig({
     baseURL: process.env.ALIGNREF_BASE_URL || "http://127.0.0.1:4173/AlignRef/",
     viewport: { width: 1440, height: 1000 },
     headless: true,
+    launchOptions: { args: ["--enable-precise-memory-info"] },
+    channel: process.env.ALIGNREF_BROWSER || undefined,
   },
   webServer: process.env.ALIGNREF_BASE_URL
     ? undefined

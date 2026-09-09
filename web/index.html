@@ -36,6 +36,17 @@
             multiple
             hidden
           />
+          <div class="demo-entry">
+            <button id="load-demo">Try demo dataset</button>
+            <p>Mouse brain Nissl serial sections<br />132 images · 1080 × 840 · subj03</p>
+            <details>
+              <summary>Demo data info</summary>
+              <p>Every other section retained. Demo data: <a href="https://brainarchitecture.org/" target="_blank" rel="noopener">Mouse Brain Architecture Project (BAP)</a>.</p>
+              <p>Images: <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener">CC BY-SA 4.0</a>, under the <a href="https://brainarchitecture.org/policies/" target="_blank" rel="noopener">BAP Policy</a>. Source host: <a href="https://www.cis.jhu.edu/data.sets/mouse_histology/mba_project_experiment/subj03/" target="_blank" rel="noopener">JHU subj03 distribution</a>.</p>
+              <p>Prepared for this demo: odd-numbered sections only, common canvas, JPEG. <a href="./demo/mouse-brain-subj03/DATA_LICENSE.md" target="_blank" rel="noopener">Data license &amp; attribution</a>. AlignRef2 code is separately Apache-2.0. No BAP or JHU endorsement is implied.</p>
+              <p>Downloads about 9.84 MB only when you click. Choose images or a folder again to replace the demo stack.</p>
+            </details>
+          </div>
           <input
             id="folders"
             type="file"
@@ -91,6 +102,7 @@
             reference. Review every slice.
           </p>
           <p id="registration-status">Local registration engine ready.</p>
+          <details><summary>Registration warnings</summary><p id="registration-warnings">No registration run for this stack.</p></details>
         </section>
         <section>
           <h2><b>3</b> Manual refinement</h2>
@@ -195,13 +207,14 @@
             </button>
           </div>
           <input id="transform-file" type="file" accept=".json" hidden />
+          <p id="demo-export-notice" hidden>Demo image exports: CC BY-SA 4.0. When sharing adaptations, retain BAP credit, link the license and describe your changes. DATA_LICENSE.md is included in image exports; AlignRef2 code remains Apache-2.0.</p>
           <p>
             Transforms map by natural slice order; count and each source size
             must match. ZIP is limited to 256 MB of encoded files.
           </p>
         </section>
         <footer>
-          <a href="./LICENSE.txt" target="_blank" rel="noopener">Apache-2.0</a>
+          <a href="./LICENSE.txt" target="_blank" rel="noopener">Source code: Apache-2.0</a>
           ·
           <a href="./THIRD_PARTY_NOTICES.txt" target="_blank" rel="noopener"
             >Third-party notices</a

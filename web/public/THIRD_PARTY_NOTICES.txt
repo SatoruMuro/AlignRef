@@ -22,3 +22,13 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+Demo image dataset (separate from application source code):
+Mouse Brain Architecture Project (BAP), subj03 Nissl serial sections.
+Images: CC BY-SA 4.0. Source code: Apache-2.0.
+Project: https://brainarchitecture.org/
+Policy: https://brainarchitecture.org/policies/
+License: https://creativecommons.org/licenses/by-sa/4.0/
+Source host: https://www.cis.jhu.edu/data.sets/mouse_histology/mba_project_experiment/subj03/
+Changes: odd-numbered sections retained, common canvas, JPEG preparation.
+Full attribution and modification history: demo/mouse-brain-subj03/DATA_LICENSE.md

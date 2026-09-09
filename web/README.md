@@ -24,7 +24,7 @@ npm run dev
 
 Vite serves `/AlignRef/`. `npm run preview` serves the production build.
 Set `ALIGNREF_BASE_URL=https://satorumuro.github.io/AlignRef/` to run the same
-Playwright end-to-end tests against the deployed site, using synthetic images only.
+Playwright end-to-end tests against the deployed site, using synthetic fixtures and the bundled real demo. Set `ALIGNREF_BROWSER=chrome` or `msedge` to test an installed Chrome/Edge; unset it for bundled Chromium.
 
 ## Workflow
 
@@ -76,8 +76,7 @@ neighbor. Opacity includes background padding; flicker alternates complete image
   Source-support masks exclude artificial padding from the similarity score.
 - `src/registration.worker.js`: module Worker for each pair, bundled by Vite and
   loaded from this site's `/AlignRef/assets/`. Cancellation terminates it. The
-  entire automatic result commits atomically after all pairs succeed. A failure
-  identifies the pair; previous transforms remain available for manual correction.
+  result commits after traversing all pairs. Failed pairs inherit the parent automatic transform with explicit QC warnings; descendants are flagged. Cancellation or total failure preserves all previous transforms.
 - `src/images.js`: browser decoding, three-image LRU, channel proxies, RGB Canvas
   rendering from original data, PNG/JPEG encoding and deterministic export names.
 - `src/main.js`: DOM controls, viewer, recording lifecycle, async operations,
@@ -151,7 +150,7 @@ Playwright exercises the production `/AlignRef/` build, not the development
 server. It verifies automatic restoration at original resolution with a 512 px
 proxy, RGB image export pixel agreement, preview/finish/range/undo semantics,
 common crop/undo, mixed input dimensions/black padding, JPEG, transform transfer,
-and atomic registration failure. It audits console errors, failed HTTP responses
+atomic total registration failure, and partial pair failure with explicit fallback. It audits console errors, failed HTTP responses
 and requests leaving the site origin.
 
 ## GitHub Pages
@@ -170,8 +169,8 @@ via its push event instead. No Python dependency or packaging action is changed.
   displacement; optimization is bounded at ±40 degrees and 40% translation.
   Low contrast, repetition, missing tissue and large morphological changes can
   fail or produce a poor local optimum. NCC below 0.35 rejects a pair; below 0.7
-  marks it for closer QC. These are heuristics, not validated scientific accuracy
-  or equivalence to MultiStackReg. No histology dataset validation is claimed.
+  marks it for closer QC. A failed pair uses an identity relative transform (inherits the parent automatic matrix), is flagged, and descendants are flagged for inspection. If every pair fails or the user cancels, existing transforms remain unchanged. Accumulated rotation beyond 90 degrees or center displacement beyond half the larger canvas side is also flagged; these warnings do not certify other transforms as anatomically correct. These are heuristics, not validated scientific accuracy
+  or equivalence to MultiStackReg. The bundled 132-image subj03 demo has an end-to-end browser test; this checks technical operation, not anatomical correctness.
 - Pairwise drift can accumulate; visual QC/manual correction remain essential.
   Re-running automatic registration replaces automatic matrices and retains manual
   matrices, so review any previously applied manual correction afterward.
@@ -186,3 +185,42 @@ via its push event instead. No Python dependency or packaging action is changed.
 - Changes are session-local. Save transforms before reload/closing/loading another
   stack. Cancellation leaves any already-written export files in the new folder.
 - Primarily desktop Chrome/Edge; mobile and other browsers are not certified.
+
+
+## Bundled real demo and image licensing
+
+**Try demo dataset** in step 1 loads 132 mouse brain Nissl images from subj03.
+The image payload is 9,840,092 bytes, each JPEG is 1080 × 840, and odd-numbered
+sections image0001 through image0263 are retained. Nothing in `public/demo/`
+is fetched during initial page load. Clicking loads the manifest and attribution
+notice, then at most eight images concurrently, with progress and cancellation.
+HTTP failure, missing/invalid images and cancellation leave the existing stack
+intact. Downloaded File objects go through the same dimension inspection,
+non-scaling center-padding, model and registration pipeline as user images.
+Choose images/folder again to replace the stack and reset its metadata/history.
+
+The dataset is **CC BY-SA 4.0**, separately from **Apache-2.0 source code**.
+Attribution: [Brain Architecture Project (BAP)](https://brainarchitecture.org/).
+See [BAP Policy](https://brainarchitecture.org/policies/),
+[CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/), and
+[JHU source host](https://www.cis.jhu.edu/data.sets/mouse_histology/mba_project_experiment/subj03/).
+[DATA_LICENSE.md](public/demo/mouse-brain-subj03/DATA_LICENSE.md) records the
+origin and actual preparation: alternate odd sections, common canvas and JPEG.
+Supplied JPEG bytes are distributed unchanged. JHU is the source host; BAP Policy
+is the licensing basis. No BAP/JHU endorsement is implied.
+
+The notice appears in the demo info panel and in the export step when demo data
+is active. Both ZIP and folder image exports include DATA_LICENSE.md and dataset
+provenance in transforms.json. Recipients sharing adapted demo images must retain
+attribution, link the license, indicate changes and use CC BY-SA 4.0. User-loaded
+image stacks do not acquire this demo metadata through transform import.
+
+The real browser test covers all 132 downloads, default Gray/768 px rigid
+registration, finite rigid matrices, accumulated motion diagnostics, adjacent
+overlays, two-slice manual range correction, crop, actual PNG decoding, JPEG,
+license packaging, demo-to-user reset, network errors and cancellation. It records
+load/registration/export timing, sampled main-page JavaScript heap and timer delay
+in test-results. Heap samples exclude native bitmap/GPU/worker memory and are not
+a total browser RAM measurement. Long registration is performed in Workers;
+image loading and export yield between images. Original JPEG Files and at most
+three decoded source bitmaps are retained, not 132 full RGBA originals.

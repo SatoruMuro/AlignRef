@@ -7,6 +7,7 @@ import {
   rigid,
   finalTransform,
   normalizeCrop,
+  validRigid,
 } from "./geometry.js";
 import {
   createState,
@@ -28,6 +29,7 @@ import {
   makeCanvas,
 } from "./images.js";
 import { registrationOrder, accumulatePair } from "./registration.js";
+import { loadDemo, exportDataNotice } from "./demo.js";
 
 const $ = (id) => document.getElementById(id),
   viewer = $("viewer"),
@@ -51,6 +53,7 @@ let scale = 1,
   drag = null,
   worker = null,
   rejectWorker = null;
+let downloadController = null;
 let drawing = false,
   needsDraw = false,
   epoch = 0;
@@ -73,6 +76,7 @@ function update() {
   for (const id of [
     "load",
     "folder",
+    "load-demo",
     "background",
     "channel",
     "proxy",
@@ -117,6 +121,7 @@ function update() {
   for (const id of ["crop-x", "crop-y", "crop-width", "crop-height"])
     $(id).disabled = !loaded || locked;
   $("cancel-job").hidden = !busy;
+  $("demo-export-notice").hidden = !state?.dataset;
   $("empty").hidden = loaded;
   canvas.hidden = !loaded;
   $("count").textContent = `/ ${n}`;
@@ -145,7 +150,9 @@ function update() {
         ? "QC: not registered"
         : s.qc.reference
           ? "QC: reference"
-          : `QC correlation: ${s.qc.score.toFixed(3)}${s.qc.warning ? " · inspect" : ""}`;
+          : s.qc.failed
+            ? "QC: pair failed · manual refinement needed"
+            : `QC correlation: ${s.qc.score.toFixed(3)}${s.qc.warning ? " · inspect" : ""}`;
     $("background").value = state.background;
   }
 }
@@ -276,6 +283,7 @@ async function operation(action) {
     worker?.terminate();
     worker = null;
     rejectWorker = null;
+    downloadController = null;
     busy = false;
     update();
     requestDraw();
@@ -283,6 +291,7 @@ async function operation(action) {
 }
 $("cancel-job").onclick = () => {
   cancelled = true;
+  downloadController?.abort();
   worker?.terminate();
   rejectWorker?.(new DOMException("Cancelled", "AbortError"));
 };
@@ -297,7 +306,7 @@ function on(id, action) {
 }
 on("load", () => $("files").click());
 on("folder", () => $("folders").click());
-async function loadFiles(input) {
+async function loadStack(input, dataset = null) {
   const files = naturalSort(
     [...input].filter((f) => /\.(jpe?g|png)$/i.test(f.name)),
   );
@@ -305,51 +314,69 @@ async function loadFiles(input) {
     message("Choose JPG, JPEG or PNG images.", true);
     return;
   }
-  await operation(async () => {
-    const images = [];
-    for (let i = 0; i < files.length; i++) {
-      checkCancel();
-      message(
-        `Reading dimensions ${i + 1} / ${files.length}: ${files[i].name}`,
-      );
-      let bitmap;
-      try {
-        bitmap = await createImageBitmap(files[i]);
-        images.push({
-          name: files[i].name,
-          width: bitmap.width,
-          height: bitmap.height,
-        });
-      } catch {
-        throw new Error(`Cannot decode ${files[i].name}. Stack unchanged.`);
-      } finally {
-        bitmap?.close();
-      }
-      await pause();
-    }
+  const images = [];
+  for (let i = 0; i < files.length; i++) {
     checkCancel();
-    const next = createState(images);
-    next.background = $("background").value;
-    const test = makeCanvas(next.canvas.width, next.canvas.height);
-    test.width = test.height = 1;
-    epoch++;
-    store?.close();
-    store = new ImageStore(files);
-    state = next;
-    current = Math.floor(files.length / 2);
-    history = new History();
-    recording = recorded = null;
-    start = end = null;
-    overlay = 0;
-    cropBox = null;
-    cropMode = false;
-    syncCrop();
-    fit();
     message(
-      `Loaded ${files.length} images. Originals preserved; ready for registration.`,
+      `Reading dimensions ${i + 1} / ${files.length}: ${files[i].name}`,
     );
-  });
+    let bitmap;
+    try {
+      bitmap = await createImageBitmap(files[i]);
+      images.push({
+        name: files[i].name,
+        width: bitmap.width,
+        height: bitmap.height,
+      });
+    } catch {
+      throw new Error(`Cannot decode ${files[i].name}. Stack unchanged.`);
+    } finally {
+      bitmap?.close();
+    }
+    await pause();
+  }
+  checkCancel();
+  if (dataset && images.some((i) => i.width !== dataset.width || i.height !== dataset.height))
+    throw new Error("Demo image dimensions do not match the manifest. Stack unchanged.");
+  const next = createState(images, dataset);
+  next.background = $("background").value;
+  const test = makeCanvas(next.canvas.width, next.canvas.height);
+  test.width = test.height = 1;
+  epoch++;
+  store?.close();
+  store = new ImageStore(files);
+  state = next;
+  current = Math.floor(files.length / 2);
+  history = new History();
+  recording = recorded = null;
+  start = end = null;
+  overlay = 0;
+  cropBox = null;
+  cropMode = false;
+  drag = null;
+  $("flicker").checked = false;
+  $("opacity").value = "0.5";
+  $("registration-status").textContent = "Local registration engine ready.";
+  $("registration-warnings").textContent = "No registration run for this stack.";
+  syncCrop();
+  fit();
+  message(
+    `Loaded ${files.length} images. Originals preserved; ready for registration.`,
+  );
 }
+async function loadFiles(input) {
+  await operation(() => loadStack(input));
+}
+on("load-demo", () => void operation(async () => {
+  downloadController = new AbortController();
+  message("Loading demo dataset…");
+  const { files, dataset } = await loadDemo(import.meta.env.BASE_URL, {
+    signal: downloadController.signal,
+    progress: (n, total) => message(`Loading demo dataset… ${n} / ${total}`),
+  });
+  checkCancel();
+  await loadStack(files, dataset);
+}));
 for (const id of ["files", "folders"])
   $(id).onchange = async (e) => {
     await loadFiles(e.target.files);
@@ -430,7 +457,7 @@ function runPair(fixed, moving) {
       worker.terminate();
       worker = null;
       rejectWorker = null;
-      data.error ? reject(new Error(data.error)) : resolve(data.result);
+      data.error ? reject(Object.assign(new Error(data.error), data.details)) : resolve(data.result);
     };
     worker.onerror = (e) => {
       worker.terminate();
@@ -463,6 +490,8 @@ on(
       });
       next.slices[reference].qc = { reference: true };
       const pairs = registrationOrder(next.slices.length, reference);
+      let successful = 0;
+      const warnings = [];
       for (let k = 0; k < pairs.length; k++) {
         checkCancel();
         const [i, parent] = pairs[k];
@@ -487,11 +516,18 @@ on(
         let result;
         try {
           result = await runPair(fixed, moving);
+          if (!validRigid(result.matrix) || !Number.isFinite(result.score))
+            throw new Error("Non-finite or invalid rigid estimate.");
+          successful++;
         } catch (e) {
           if (e.name === "AbortError") throw e;
-          throw new Error(
-            `Slice ${i + 1} → ${parent + 1}: ${e.message} No automatic transforms were changed.`,
-          );
+          result = { matrix: identity(), score: null, warning: e.message, failed: true,
+            estimatedTransform: e.estimatedTransform ?? null, estimatedScore: e.score ?? null };
+        }
+        const ancestor = next.slices[parent].qc?.fallbackAncestor;
+        if (result.failed || ancestor !== undefined) {
+          result.fallbackAncestor = result.failed ? i : ancestor;
+          if (!result.failed) result.warning = [result.warning, `Downstream of fallback at slice ${ancestor + 1}.`].filter(Boolean).join(" ");
         }
         next.slices[i].automaticTransform = accumulatePair(
           next.slices[parent].automaticTransform,
@@ -499,20 +535,42 @@ on(
           proxyScale,
         );
         next.slices[i].qc = {
+          failed: !!result.failed,
+          estimatedTransform: result.estimatedTransform ?? null,
+          estimatedScore: result.estimatedScore ?? null,
+          estimatedTransformSpace: "proxy pixels; center-padded moving source to parent",
+          fallback: result.failed ? "Identity pair; inherited parent automatic transform" : null,
+          fallbackAncestor: result.fallbackAncestor,
           score: result.score,
           warning: result.warning,
           parent,
           channel,
           proxy: limit,
         };
+        const matrix = next.slices[i].automaticTransform;
+        if (!validRigid(matrix)) throw new Error("Invalid accumulated rigid transform. Stack unchanged.");
+        const angle = Math.atan2(matrix[1], matrix[0]) * 180 / Math.PI;
+        const cx = state.canvas.width / 2, cy = state.canvas.height / 2;
+        const displacement = Math.hypot(matrix[0]*cx + matrix[2]*cy + matrix[4]-cx,
+          matrix[1]*cx + matrix[3]*cy + matrix[5]-cy);
+        if (Math.abs(angle) > 90 || displacement > Math.max(cx, cy)) {
+          next.slices[i].qc.warning = [next.slices[i].qc.warning, "Large accumulated motion; inspect drift."].filter(Boolean).join(" ");
+        }
+        if (next.slices[i].qc.warning) warnings.push(
+          `Slice ${i + 1} (${next.slices[i].name}) → ${parent + 1}: ${next.slices[i].qc.warning}${result.failed ? " Fallback: inherited parent transform." : ""}`);
         await pause();
       }
       checkCancel();
+      if (!successful) {
+        $("registration-warnings").textContent = warnings.join("\n");
+        throw new Error("Registration failed for every pair. No automatic transforms were changed. Manual tools remain available.");
+      }
       commit(next);
+      $("registration-warnings").textContent = warnings.join("\n") || "No pair warnings.";
       current = reference;
       const weak = next.slices.filter((s) => s.qc?.warning).length;
       $("registration-status").textContent =
-        `Registered ${next.slices.length} slices · reference ${reference + 1}${weak ? ` · ${weak} low-correlation pairs` : ""}`;
+        `Registered ${next.slices.length} slices · reference ${reference + 1}${weak ? ` · ${weak} pairs to inspect` : ""}`;
       message(
         `Rigid registration complete. ${weak ? `${weak} pairs need close inspection. ` : ""}Review previous / next overlays. Existing manual corrections preserved.`,
       );
@@ -858,6 +916,15 @@ async function exportImages(directory = null) {
   }
   checkCancel();
   const json = JSON.stringify(manifest, null, 2);
+  if (state.dataset) {
+    const notice = exportDataNotice(state.dataset);
+    if (directory) {
+      const handle = await directory.getFileHandle("DATA_LICENSE.md", { create: true });
+      const stream = await handle.createWritable();
+      try { await stream.write(notice); await stream.close(); }
+      catch (error) { await stream.abort().catch(() => {}); throw error; }
+    } else files["DATA_LICENSE.md"] = strToU8(notice);
+  }
   if (directory) {
     const handle = await directory.getFileHandle("transforms.json", {
       create: true,
