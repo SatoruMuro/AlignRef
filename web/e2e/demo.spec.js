@@ -93,7 +93,7 @@ test('real 132-section demo: lazy load, rigid registration, QC, refinement, crop
   expect([...jpgs['image0001.jpg'].slice(0,2)]).toEqual([255,216]);
   expect(jpgs['DATA_LICENSE.md']).toBeTruthy();
   await page.locator('#export-folder').click();
-  await expect(page.locator('#status')).toContainText('Exported 132 JPEG images to AlignRef2-aligned-',{timeout:120000});
+  await expect(page.locator('#status')).toContainText('Exported 132 JPEG images and transforms.json to AlignRef2-aligned-',{timeout:120000});
   const folder=await page.evaluate(async()=>{
     const root=await navigator.storage.getDirectory();const dirs=[];
     for await (const [name,handle] of root.entries()) if(handle.kind==='directory')dirs.push(name);
