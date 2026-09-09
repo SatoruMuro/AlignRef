@@ -163,7 +163,7 @@ function fit() {
   requestDraw();
 }
 function viewGeometry() {
-  const rect = viewer.getBoundingClientRect(),
+  const rect = { width: viewer.clientWidth, height: viewer.clientHeight },
     v = state.viewport;
   if (autoFit)
     scale = Math.min(
@@ -693,8 +693,10 @@ function eventPoint(e) {
   const r = viewer.getBoundingClientRect(),
     g = viewGeometry();
   return {
-    x: (e.clientX - r.left - g.ox) / scale + state.viewport.x,
-    y: (e.clientY - r.top - g.oy) / scale + state.viewport.y,
+    x:
+      (e.clientX - r.left - viewer.clientLeft - g.ox) / scale +
+      state.viewport.x,
+    y: (e.clientY - r.top - viewer.clientTop - g.oy) / scale + state.viewport.y,
   };
 }
 viewer.onpointerdown = (e) => {

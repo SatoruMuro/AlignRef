@@ -233,13 +233,11 @@ test("production Pages base: load → rigid registration → overlay → range r
     .locator("#files")
     .setInputFiles(files.map((f) => ({ ...f, name: "alternate-" + f.name })));
   await expect(page.locator("#status")).toContainText("Loaded 3 images");
-  await page
-    .locator("#transform-file")
-    .setInputFiles({
-      name: "transforms.json",
-      mimeType: "application/json",
-      buffer: Buffer.from(JSON.stringify(saved)),
-    });
+  await page.locator("#transform-file").setInputFiles({
+    name: "transforms.json",
+    mimeType: "application/json",
+    buffer: Buffer.from(JSON.stringify(saved)),
+  });
   await expect(page.locator("#status")).toContainText("Transforms loaded");
   const reused = await manifest(page);
   expect(reused.slices[0].finalTransform).toEqual(
@@ -372,16 +370,55 @@ test("folder export writes sequentially through File System Access handles and c
   // Invalid import must preserve all existing state.
   const invalid = structuredClone(untouched);
   invalid.slices[0].automaticTransform[0] = 2;
-  await page
-    .locator("#transform-file")
-    .setInputFiles({
-      name: "invalid.json",
-      mimeType: "application/json",
-      buffer: Buffer.from(JSON.stringify(invalid)),
-    });
+  await page.locator("#transform-file").setInputFiles({
+    name: "invalid.json",
+    mimeType: "application/json",
+    buffer: Buffer.from(JSON.stringify(invalid)),
+  });
   await expect(page.locator("#status")).toContainText(
     "rigid matrix is invalid",
   );
   expect(await manifest(page)).toEqual(untouched);
   expect(log).toEqual({ errors: [], external: [], badResponses: [] });
+});
+
+test("crop drag uses exact canvas pixels including viewer borders", async ({
+  page,
+}) => {
+  await page.goto("./");
+  await page
+    .locator("#files")
+    .setInputFiles(await fixtures(page, { width: 256, height: 192 }));
+  await expect(page.locator("#status")).toContainText("Loaded 3 images");
+  for (let i = 0; i < 8; i++) await page.locator("#zoom-out").click();
+  await page.locator("#start-crop").click();
+  await page.waitForFunction(
+    () => document.querySelector("#canvas").width > 300,
+  );
+  const [from, to] = await page.evaluate(() => {
+    const c = document.querySelector("#canvas"),
+      r = c.getBoundingClientRect(),
+      m = c.getContext("2d").getTransform();
+    return [
+      [20, 20],
+      [180, 140],
+    ].map(([x, y]) => {
+      const p = new DOMPoint(x, y).matrixTransform(m);
+      return {
+        x: r.left + (p.x * r.width) / c.width,
+        y: r.top + (p.y * r.height) / c.height,
+      };
+    });
+  });
+  await page.mouse.move(from.x, from.y);
+  await page.mouse.down();
+  await page.mouse.move(to.x, to.y, { steps: 5 });
+  await page.mouse.up();
+  await page.locator("#apply-crop").click();
+  expect((await manifest(page)).viewport).toEqual({
+    x: 20,
+    y: 20,
+    width: 160,
+    height: 120,
+  });
 });
