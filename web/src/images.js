@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 import { padding, finalTransform, identity, compose } from "./geometry.js";
+import { decodeSource } from "./source.js";
 
 export function makeCanvas(width, height) {
   if (
@@ -22,17 +23,25 @@ export function makeCanvas(width, height) {
 // Keep File objects; only a small LRU of decoded originals is retained.
 export class ImageStore {
   cache = new Map();
+  controller = new AbortController();
   constructor(files) {
     this.files = files;
   }
-  async get(index) {
+  async get(index, signal) {
+    const activeSignal = signal ? AbortSignal.any([signal, this.controller.signal]) : this.controller.signal;
+    activeSignal.throwIfAborted();
     if (this.cache.has(index)) {
       const b = this.cache.get(index);
       this.cache.delete(index);
       this.cache.set(index, b);
       return b;
     }
-    const bitmap = await createImageBitmap(this.files[index]);
+    const { bitmap } = await decodeSource(this.files[index], activeSignal);
+    // A concurrent viewer/operation decode may have filled this entry meanwhile.
+    if (this.cache.has(index)) {
+      bitmap.close();
+      return this.cache.get(index);
+    }
     this.cache.set(index, bitmap);
     while (this.cache.size > 3) {
       const key = this.cache.keys().next().value;
@@ -42,6 +51,7 @@ export class ImageStore {
     return bitmap;
   }
   close() {
+    this.controller.abort();
     for (const b of this.cache.values()) b.close();
     this.cache.clear();
   }

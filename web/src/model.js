@@ -18,6 +18,7 @@ export function createState(images, dataset = null) {
       name: i.name,
       width: i.width,
       height: i.height,
+      source: i.source ?? null,
       automaticTransform: identity(),
       manualTransform: identity(),
       qc: null,

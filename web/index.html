@@ -18,13 +18,14 @@
     <header>
       <div class="brand">AlignRef<span>2</span> <small>WEB BETA</small></div>
       <p>Automatic Registration + Manual Refinement for Serial Images</p>
-      <span class="privacy">● Images stay on this device</span>
+      <span class="privacy">● Your images stay on your device</span>
     </header>
     <main>
       <aside aria-label="Workflow">
         <section id="load-section">
           <h2><b>1</b> Load images</h2>
-          <p>JPG / JPEG / PNG · natural filename order</p>
+          <p>JPG / JPEG / PNG / TIFF · natural filename order</p>
+          <p class="local-privacy">Your images stay on your device. Images you load are processed locally in your browser and are not uploaded to any server.</p>
           <div class="row">
             <button id="load" class="primary">Choose images</button
             ><button id="folder">Choose folder</button>
@@ -32,7 +33,7 @@
           <input
             id="files"
             type="file"
-            accept=".jpg,.jpeg,.png"
+            accept=".jpg,.jpeg,.png,.tif,.tiff"
             multiple
             hidden
           />
@@ -50,7 +51,7 @@
           <input
             id="folders"
             type="file"
-            accept=".jpg,.jpeg,.png"
+            accept=".jpg,.jpeg,.png,.tif,.tiff"
             webkitdirectory
             multiple
             hidden
@@ -62,6 +63,12 @@
               <option value="black">Black</option>
             </select></label
           >
+          <details>
+            <summary>TIFF support &amp; bit depth</summary>
+            <p>Single-page, strip-based unsigned 8/16-bit grayscale or RGB TIFF; uncompressed, LZW or Deflate. Top-left orientation, interleaved samples, no alpha.</p>
+            <p>16-bit samples map from 0–65535 to 0–255. Display, registration and PNG/JPEG export are 8-bit; the original TIFF file is preserved. There is no automatic contrast stretch.</p>
+            <p>Multi-page, tiled, BigTIFF, signed/float, palette/CMYK, alpha, PackBits/JPEG/CCITT and other orientations are not supported. The TIFF decoder is bundled locally; no runtime CDN.</p>
+          </details>
           <button id="expand" data-stack>
             Expand Canvas +100 px each side
           </button>
@@ -138,11 +145,16 @@
             >
             ×10 · active while recording
           </p>
+          <div class="position-range" aria-live="polite">
+            <strong>Position range</strong>
+            <span>Start: <output id="position-start">—</output></span>
+            <span>End: <output id="position-end">—</output></span>
+          </div>
           <div class="row">
             <button id="range-start" data-stack>Set Position Start</button
             ><button id="range-end" data-stack>Set Position End</button>
           </div>
-          <output id="range">Range not set</output>
+          <output id="range">Apply range: set Start and End.</output>
           <button id="apply-range" class="accent" data-stack>
             Apply Position &amp; Rotation
           </button>
@@ -240,6 +252,7 @@
           ><output id="zoom">100%</output
           ><button id="zoom-in" data-stack aria-label="Zoom in">+</button>
         </nav>
+        <p class="navigation-hint">Slice navigation: <kbd>R</kbd> / <kbd>←</kbd> Previous · <kbd>F</kbd> / <kbd>→</kbd> Next<br />Mouse wheel ↑ Previous / ↓ Next · <kbd>Ctrl</kbd> + wheel: Zoom</p>
         <div class="image-heading">
           <strong id="filename">No stack loaded</strong
           ><span id="dimensions">—</span>
@@ -274,7 +287,7 @@
           <p>
             Outside recording: ←/→, R/F, U/J, PageUp/PageDown navigate. During
             recording: WASD, OKL;, arrows translate; Q/I and E/P rotate. Shift
-            gives 10 px / 1°. Ctrl+wheel zooms. Drag the viewer to pan outside
+            gives 10 px / 1°. Over the viewer, wheel up/down selects the previous/next slice (one step per burst; pause 180 ms between bursts). Ctrl+wheel zooms. Wheel navigation pauses while recording, processing or editing a form field. Drag the viewer to pan outside
             crop mode. Finish stores a correction only; Apply changes the
             selected range once.
           </p>
@@ -283,7 +296,7 @@
             rotation and moderate displacement. Low-texture, repetitive, damaged
             or substantially different slices may fail. QC correlation is an
             image similarity indicator, not a scientific accuracy estimate. No
-            TIFF, DICOM, 16-bit preservation, scale or deformation in this beta.
+            DICOM, 16-bit export/preservation, scale or deformation in this beta. See step 1 for the supported TIFF subset.
             Save transforms before closing or loading another stack.
           </p>
         </details>

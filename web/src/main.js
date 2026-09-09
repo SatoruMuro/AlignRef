@@ -30,6 +30,8 @@ import {
 } from "./images.js";
 import { registrationOrder, accumulatePair } from "./registration.js";
 import { loadDemo, exportDataNotice } from "./demo.js";
+import { decodeSource, isImageFile } from "./source.js";
+import { wheelNavigation } from "./navigation.js";
 
 const $ = (id) => document.getElementById(id),
   viewer = $("viewer"),
@@ -54,6 +56,8 @@ let scale = 1,
   worker = null,
   rejectWorker = null;
 let downloadController = null;
+let operationController = null;
+let wheelStep = wheelNavigation();
 let drawing = false,
   needsDraw = false,
   epoch = 0;
@@ -128,7 +132,12 @@ function update() {
   $("slice").value = current + 1;
   $("slice").max = n;
   $("range").textContent =
-    `Range: ${start === null ? "—" : start + 1} → ${end === null ? "—" : end + 1} (inclusive)`;
+    start === null || end === null ? "Apply range: set Start and End."
+      : `Apply to slices ${Math.min(start, end) + 1}–${Math.max(start, end) + 1} (inclusive)${start > end ? " · Start > End; both endpoints retained." : ""}`;
+  for (const [name, value] of [["start", start], ["end", end]]) {
+    $("position-" + name).textContent = value === null ? "—" : `${value + 1} ✓`;
+    $("range-" + name).classList.toggle("position-set", value !== null);
+  }
   const r = recording ?? recorded;
   $("recorded").textContent = r
     ? `${recording ? "Recording" : "Stored"}: ΔX ${r.dx.toFixed(1)} px · ΔY ${r.dy.toFixed(1)} px · Δθ ${r.angle.toFixed(2)}°`
@@ -142,7 +151,7 @@ function update() {
     $("filename").textContent = s.name;
     $("dimensions").textContent = `${v.width} × ${v.height} px`;
     $("stack-info").textContent =
-      `${n} images · original canvas ${state.canvas.width} × ${state.canvas.height} px`;
+      `${n} images · original canvas ${state.canvas.width} × ${state.canvas.height} px${state.slices.some(s => s.source?.format === "TIFF") ? " · TIFF display / registration / export: 8-bit" : ""}`;
     $("transform-info").textContent =
       `Final: X ${m[4].toFixed(2)} · Y ${m[5].toFixed(2)} px · θ ${((Math.atan2(m[1], m[0]) * 180) / Math.PI).toFixed(3)}°`;
     $("qc").textContent =
@@ -260,7 +269,7 @@ async function draw() {
       $("zoom").textContent = `${Math.round(scale * 100)}%`;
     }
   } catch (error) {
-    message(`Viewer: ${error.message}`, true);
+    if (error.name !== "AbortError") message(`Viewer: ${error.message}`, true);
   } finally {
     drawing = false;
   }
@@ -269,6 +278,7 @@ async function operation(action) {
   if (busy) return;
   busy = true;
   cancelled = false;
+  operationController = new AbortController();
   update();
   try {
     await action();
@@ -284,6 +294,7 @@ async function operation(action) {
     worker = null;
     rejectWorker = null;
     downloadController = null;
+    operationController = null;
     busy = false;
     update();
     requestDraw();
@@ -291,6 +302,7 @@ async function operation(action) {
 }
 $("cancel-job").onclick = () => {
   cancelled = true;
+  operationController?.abort();
   downloadController?.abort();
   worker?.terminate();
   rejectWorker?.(new DOMException("Cancelled", "AbortError"));
@@ -308,10 +320,10 @@ on("load", () => $("files").click());
 on("folder", () => $("folders").click());
 async function loadStack(input, dataset = null) {
   const files = naturalSort(
-    [...input].filter((f) => /\.(jpe?g|png)$/i.test(f.name)),
+    [...input].filter(isImageFile),
   );
   if (!files.length) {
-    message("Choose JPG, JPEG or PNG images.", true);
+    message("Choose JPG, JPEG, PNG or TIFF images.", true);
     return;
   }
   const images = [];
@@ -322,14 +334,17 @@ async function loadStack(input, dataset = null) {
     );
     let bitmap;
     try {
-      bitmap = await createImageBitmap(files[i]);
+      const decoded = await decodeSource(files[i], operationController.signal);
+      bitmap = decoded.bitmap;
       images.push({
         name: files[i].name,
         width: bitmap.width,
         height: bitmap.height,
+        source: decoded.source,
       });
-    } catch {
-      throw new Error(`Cannot decode ${files[i].name}. Stack unchanged.`);
+    } catch (error) {
+      if (error.name === "AbortError") throw error;
+      throw new Error(`Cannot decode ${files[i].name}: ${error.message} Stack unchanged.`);
     } finally {
       bitmap?.close();
     }
@@ -354,6 +369,7 @@ async function loadStack(input, dataset = null) {
   cropBox = null;
   cropMode = false;
   drag = null;
+  wheelStep = wheelNavigation();
   $("flicker").checked = false;
   $("opacity").value = "0.5";
   $("registration-status").textContent = "Local registration engine ready.";
@@ -420,9 +436,16 @@ on("zoom-out", () => zoom(0.8));
 viewer.addEventListener(
   "wheel",
   (e) => {
+    if (e.target.closest("input,select,textarea,[contenteditable='true']") ||
+        document.activeElement?.matches("input,select,textarea,[contenteditable='true']")) return;
     if (e.ctrlKey) {
       e.preventDefault();
       zoom(e.deltaY < 0 ? 1.25 : 0.8);
+    } else if (state) {
+      e.preventDefault();
+      if (busy || recording || e.altKey || e.metaKey || Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return;
+      const step = wheelStep(e.deltaY, performance.now());
+      if (step) navigate(current + step);
     }
   },
   { passive: false },
@@ -499,14 +522,14 @@ on(
           `Registering ${k + 1} / ${pairs.length}: slice ${i + 1} → ${parent + 1} (${channel})`,
         );
         const fixed = makeProxy(
-          await store.get(parent),
+          await store.get(parent, operationController.signal),
           state.slices[parent],
           state,
           limit,
           channel,
         );
         const moving = makeProxy(
-            await store.get(i),
+            await store.get(i, operationController.signal),
             state.slices[i],
             state,
             limit,
@@ -613,11 +636,17 @@ on("cancel-record", () => {
 on("range-start", () => {
   start = current;
   update();
+  rangeFeedback(`Start position set to slice ${start + 1}`);
 });
 on("range-end", () => {
   end = current;
   update();
+  rangeFeedback(`End position set to slice ${end + 1}`);
 });
+function rangeFeedback(text) {
+  message(text);
+  setTimeout(() => { if ($("status").textContent === text) message($("range").textContent); }, 2500);
+}
 on("apply-range", () => {
   commit(
     applyRange(state, recorded.matrix, start, end),
@@ -888,7 +917,7 @@ async function exportImages(directory = null) {
   for (let i = 0; i < state.slices.length; i++) {
     checkCancel();
     message(`Exporting ${i + 1} / ${state.slices.length}: ${names[i]}`);
-    const c = renderSlice(await store.get(i), state.slices[i], state);
+    const c = renderSlice(await store.get(i, operationController.signal), state.slices[i], state);
     let blob;
     try {
       blob = await encodeCanvas(c, format, quality);

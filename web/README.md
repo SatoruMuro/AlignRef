@@ -28,7 +28,7 @@ Playwright end-to-end tests against the deployed site, using synthetic fixtures 
 
 ## Workflow
 
-1. Choose multiple JPG/JPEG/PNG images or a directory. Natural filename order is
+1. Choose multiple JPG/JPEG/PNG/TIFF images or a directory. Natural filename order is
    used (`image1`, `image2`, `image10`). Select White/Black background. Every source
    retains its native pixel size; center padding uses the maximum width/height,
    with an extra pixel on the right/bottom when the difference is odd. Originals
@@ -58,7 +58,7 @@ Playwright end-to-end tests against the deployed site, using synthetic fixtures 
    retained; collisions get deterministic suffixes. `transforms.json` is included.
 
 Outside recording, arrows, F/J/PageDown and R/U/PageUp navigate. Fit to Window,
-zoom buttons, Ctrl+wheel and drag-to-pan help inspect the image. Overlays always
+zoom buttons, Ctrl+wheel and drag-to-pan help inspect the image. Over the viewer, wheel down/up advances/reverses one slice per event burst, with 180 ms of quiet between bursts. Wheel navigation is disabled during processing, recording or while a form field has focus. Outside the viewer, normal page scrolling is unchanged. The visible viewer hint shows R/left and F/right; their keyboard behavior is unchanged. Overlays always
 show the neighbor's composed transform; the current preview does not move the
 neighbor. Opacity includes background padding; flicker alternates complete images.
 
@@ -85,7 +85,7 @@ neighbor. Opacity includes background padding; flicker alternates complete image
 The proxy uses one isotropic scale, with rounded-up canvas dimensions. Translation
 terms are divided by that scale before pairwise accumulation. Rotations are never
 rescaled. Pyramid coordinate conversion accounts for odd dimensions. Full-size
-output is rendered directly from original RGB in one Canvas draw, after composing
+output is rendered from the decoded 8-bit source representation (including the documented TIFF conversion) in one Canvas draw, after composing
 all transforms. Repeated refinement does not repeatedly re-encode image data.
 
 The independent implementation does not use or copy MultiStackReg or TurboReg.
@@ -133,7 +133,7 @@ version; Web uses natural sort. No desktop fixes or distribution changes are mad
 ## Dependencies and license
 
 New source: Apache-2.0, under the repository's existing LICENSE.
-Runtime: fflate 0.8.3 (MIT), bundled locally for ZIP export.
+Runtime: fflate 0.8.3 (MIT) for ZIP export and TIFF Deflate; tiff 7.1.3 (MIT) and iobuffer 6.0.1 (MIT) for TIFF decoding. All are bundled locally.
 Build: Vite 8.2.2 (MIT); test: Playwright 1.63.0 (Apache-2.0).
 The npm lockfile pins transitive dependencies. Full runtime license text ships in
 `public/THIRD_PARTY_NOTICES.txt`; Apache-2.0 ships in `public/LICENSE.txt`.
@@ -174,7 +174,7 @@ via its push event instead. No Python dependency or packaging action is changed.
 - Pairwise drift can accumulate; visual QC/manual correction remain essential.
   Re-running automatic registration replaces automatic matrices and retains manual
   matrices, so review any previously applied manual correction afterward.
-- JPG/PNG only, browser-decoded 8-bit RGBA; no TIFF, DICOM, 16-bit workflow, ICC/EXIF
+- JPG/PNG and the documented TIFF subset, represented as 8-bit RGBA; no DICOM, 16-bit export, ICC/EXIF
   metadata round-trip or physical spacing preservation. Canvas color management
   follows the browser. Exported PNG is lossless relative to rendered 8-bit pixels.
 - Original File references and at most three decoded source bitmaps are retained;
@@ -224,3 +224,88 @@ in test-results. Heap samples exclude native bitmap/GPU/worker memory and are no
 a total browser RAM measurement. Long registration is performed in Workers;
 image loading and export yield between images. Original JPEG Files and at most
 three decoded source bitmaps are retained, not 132 full RGBA originals.
+
+## TIFF input: explicit beta subset
+
+The app uses **tiff 7.1.3** in a bundled module Worker. It does not rely on the
+browser's native TIFF decoder and does not load a remote CDN. TIFF decoding can
+be cancelled; an individual decode times out after 60 seconds. Original File
+objects remain unchanged; the same center-padding, registration, manual, crop
+and export pipeline is used for TIFF, PNG and JPEG.
+
+| Feature | Supported by this beta |
+|---|---|
+| Container | Classic TIFF, one page per file, little- or big-endian |
+| Pixel types | Grayscale (BlackIsZero / WhiteIsZero), RGB |
+| Samples | Unsigned 8-bit or unsigned 16-bit; uniform depth across channels |
+| Layout | Strips, interleaved RGB, top-left orientation, normal fill order |
+| Compression | None (1), LZW (5), Zlib/Deflate (8 / 32946) |
+| Predictor | None (1), horizontal differencing (2) |
+| Not supported | Multi-page, tiled, BigTIFF, planar-separated RGB, alpha/extra channels, palette, CMYK, bilevel, signed integers, floating point, PackBits, JPEG/CCITT compression, other orientation/fill-order/predictor values |
+
+Unsupported or inconsistent files produce a filename-specific error and leave
+the previous stack unchanged. Save multi-page stacks as separate files before
+loading. The integration intentionally accepts a narrower subset than the
+underlying decoder; the table describes AlignRef2, not all decoder capabilities.
+
+**16-bit handling:** the decoder first produces unsigned 16-bit samples. For
+display/registration they are converted with `round(value / 257)` to 8-bit RGBA
+(0–65535 → 0–255). WhiteIsZero samples are inverted by the decoder before this
+conversion. No per-image contrast stretching is applied; images using only a
+small part of the 16-bit range may appear dark and lose useful contrast. The
+16-bit decoded array is temporary, while the original TIFF File is retained.
+The bitmap cache holds at most three decoded 8-bit representations.
+
+**Export is 8-bit PNG or JPEG**, including for 16-bit input. PNG avoids additional
+lossy encoding but does not recover the discarded 16-bit precision. Source bit
+depth, compression, conversion and representation/export bit depths are recorded
+per slice in `transforms.json`. TIFF export and high-bit-depth editing are not
+implemented. ICC/EXIF/resolution and physical spacing do not round-trip.
+
+### Decoder selection and license
+
+| Candidate | License / approach | Decision |
+|---|---|---|
+| [image-js/tiff](https://github.com/image-js/tiff), npm tiff 7.1.3 | MIT; ES modules, typed unsigned-16 sample output; shares existing fflate dependency; iobuffer is MIT | Selected; permits an explicit and testable conversion step |
+| [UTIF.js](https://github.com/photopea/UTIF.js), npm utif 3.1.0 | MIT; broader format support, low-level IFD API and toRGBA8 helper; CommonJS and pako dependency | Considered; the wider variant surface is unnecessary for this beta subset |
+
+Both are permissively licensed. The selected decoder's and iobuffer's full MIT
+notices ship in THIRD_PARTY_NOTICES.txt. AlignRef2 code remains Apache-2.0; the
+BAP demo image dataset remains separately CC BY-SA 4.0. No new runtime service
+or upload endpoint is introduced.
+
+## Local processing and privacy
+
+**Your images stay on your device. Images you load are processed locally in your
+browser and are not uploaded to any server.** This is displayed beside the load
+controls before file selection.
+
+The production app, Workers and bundled decoder were inspected for fetch,
+XMLHttpRequest, WebSocket, sendBeacon, telemetry, analytics and external API
+calls. Application fetch is confined to the public demo loader. Bundled scripts
+are fetched from the AlignRef site; Worker postMessage transfers image data
+within the browser and is not an HTTP upload. There is no image POST/PUT,
+analytics client, WebSocket connection or server processing component.
+
+User-loaded images are local-only. **Try demo dataset** downloads public images
+from this AlignRef site's GitHub Pages hosting when clicked. This is a download,
+and does not transmit the user's local images. External attribution/documentation
+links navigate only when clicked.
+
+Browser tests audit request methods/bodies and origins, HTTP errors, WebSockets
+and console errors during local TIFF load, registration, manual refinement and
+export. Synthetic TIFF fixtures (8-bit grayscale, RGB8 LZW, Gray16 Deflate,
+WhiteIsZero, big-endian RGB16 LZW and predictor 2) live in tests/fixtures/tiff;
+their deterministic generator is tests/make-tiff-fixtures.mjs. They are test
+assets, not part of the public demo. Known pixel probes verify conversion and
+actual exported PNG pixels; translated fixtures verify automatic restoration.
+
+## Range feedback
+
+The manual panel always shows separate Start and End values (unset: em dash;
+set: slice number and checkmark). Set buttons show a quiet active style and a
+2.5-second status message. Before Apply, the inclusive normalized target range
+is displayed. If Start > End, both entered values remain visible, and the label
+explains that both endpoints are retained while applying to the intervening
+slices. Finish Recording retains the existing behavior of setting both endpoints
+to the current slice. Loading a new stack resets these indicators.

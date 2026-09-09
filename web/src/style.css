@@ -212,6 +212,12 @@ kbd {
   gap: 8px;
   flex-wrap: wrap;
 }
+.navigation-hint { font-size: 12px; color: var(--muted); margin: 7px 0 0; }
+.local-privacy { color: #91d9c1; font-size: 12px; }
+.position-range { display: flex; flex-wrap: wrap; gap: 6px 18px; margin: 12px 0; }
+.position-range strong { flex-basis: 100%; font-size: 12px; color: var(--muted); }
+.position-range output { display: inline; padding: 0; border: 0; }
+button.position-set { border-color: #77bda6; background: #234039; }
 .slice-number {
   flex-direction: row;
   align-items: center;
