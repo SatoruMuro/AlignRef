@@ -59,11 +59,12 @@ header p {
 }
 .guide-links {
   display: flex;
+  flex-wrap: wrap;
   gap: 12px;
   font-size: 13px;
   white-space: nowrap;
 }
-@media (min-width: 1001px) and (max-width: 1250px) {
+@media (min-width: 701px) and (max-width: 1250px) {
   header p { display: none; }
 }
 main {
