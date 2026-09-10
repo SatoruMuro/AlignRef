@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="連続する2D画像の位置ずれを、ブラウザ内で確認・補正して保存します。インストールは不要です。">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'none'; style-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'none'">
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="./guide.css">
+<title>AlignRef2の使い方 | AlignRef2</title>
+</head>
+<body>
+<a class="skip" href="#content">本文へ</a>
+<header>
+<a class="brand" href="../">AlignRef<span>2</span> <small>WEB BETA</small>
+</a>
+<nav aria-label="言語とアプリ">
+<a href="./ja.html" lang="ja" aria-current="page">日本語</a>
+<a href="./en.html" lang="en" >English</a>
+<a class="launch" href="../">アプリを開く ↗</a>
+</nav>
+</header>
+<div class="layout">
+<aside>
+<nav aria-label="目次">
+<p class="eyebrow">このページの内容</p>
+<a href="#start">すぐ試す</a>
+<a href="#workflow">基本操作</a>
+<a href="#range">Start / Endの意味</a>
+<a href="#controls">キー・マウス操作</a>
+<a href="#formats">対応形式・16-bit</a>
+<a href="#privacy">プライバシー</a>
+<a href="#trouble">困ったときは</a>
+<a href="#credits">出典・ライセンス</a>
+<a href="./legacy.html">Legacy workflow</a>
+</nav>
+</aside>
+<main id="content">
+<p class="eyebrow">連続画像の位置合わせ</p>
+<h1>AlignRef2の使い方</h1>
+<p class="lead">連続する2D画像の位置ずれを、ブラウザ内で確認・補正して保存します。インストールは不要です。</p>
+<section id="start">
+<h2>まずはデモで試しましょう</h2>
+<p>AlignRef2は、組織の連続切片などの画像を順番に読み込み、平行移動と回転で位置を合わせるツールです。自動位置合わせ、目視確認、手動補正、切り抜き、保存までをブラウザ内で行えます。旧 AlignRef + MultiStackRegの手順は<a href="./legacy.html">Legacy workflow</a>として残しています。</p>
+<p>
+<a class="button" href="../">AlignRef2を開く →</a>
+</p>
+<p>公開URL：<a href="https://satorumuro.github.io/AlignRef/">https://satorumuro.github.io/AlignRef/</a>
+</p>
+<p>
+<strong>Load images → Try demo dataset</strong> を押すと、マウス脳の連続切片132枚を読み込めます。ご自身の画像を用意する必要はありません。クリック時に約9.84 MBをダウンロードします。デモは事前にAlignRef2で位置合わせされていません。</p>
+<div class="callout">
+<strong>推奨環境：デスクトップ版Chrome / Edge</strong>
+<br>Windows上のGoogle ChromeとMicrosoft Edgeで確認しています。他のブラウザやスマートフォンでの画像処理は未検証です。このガイドは狭い画面でも読めます。</div>
+</section>
+
+<section id="workflow">
+<h2>基本的な使い方</h2>
+<ol class="steps">
+<li>
+<strong>画像を読み込む</strong>
+<p>
+<b>Choose images</b>で複数ファイル、または<b>Choose folder</b>でフォルダーを選びます。1切片につき1ファイルを用意してください。ファイル名の数字を考慮した順序（image1、image2、image10）で並びます。新しい画像を読み込むと現在の作業が置き換わるので、先に保存してください。</p>
+</li>
+<li>
+<strong>順序と画像を確認する</strong>
+<p>Viewer上部の<b>Slice</b>とファイル名を確認します。<kbd>F</kbd>で次、<kbd>R</kbd>で前へ移動。Viewer上のホイールも使えます。<b>Fit to Window</b>で全体を表示できます。大きさの異なる画像は拡大縮小せず、最大幅・高さの共通キャンバス中央に配置されます。余白は<b>Canvas background</b>でWhite / Blackを選びます。</p>
+</li>
+<li>
+<strong>自動位置合わせの設定を確認して実行する</strong>
+<p>
+<b>Automatic registration</b>の<b>Channel</b>はGray / Red / Green / Blueから選択します。初めてならGray、<b>Proxy limit</b>は初期値768から試せます。Proxy limitは計算用の縮小画像の最大辺で、出力サイズを縮小する設定ではありません。</p>
+<p>
+<b>Reference</b>の<b>Middle slice</b>は中央、<b>Current slice</b>は今見ている画像を基準にします。<b>Run Rigid Registration</b>で、基準から両側へ隣接画像を順に位置合わせします。対象は読み込んだスタック全体です。<strong>Set Position Start / Endはこの処理の範囲指定には使いません。</strong>
+</p>
+</li>
+<li>
+<strong>すべての結果を目で確認する</strong>
+<p>
+<b>Previous image overlay</b> / <b>Next image overlay</b>で前後の画像を重ね、<b>Overlay opacity</b>で透明度を調整します。<b>Flicker</b>で交互表示できます。<b>Registration warnings</b>も確認してください。数値が良くても解剖学的に正しいとは限りません。形の変化、大きなずれ、欠損、低コントラストの画像は補正が必要になることがあります。</p>
+</li>
+<li>
+<strong>必要な部分を手動で補正する</strong>
+<p>補正の基準にする画像へ移動し、前後画像のoverlayを表示して<b>Start Recording Position</b>を押します。<kbd>W A S D</kbd>で上下左右に1 px、<kbd>Q E</kbd>で左右に0.1°回転します。<kbd>Shift</kbd>を併用すると10倍です。記録中は切片移動が止まります。</p>
+<p>
+<b>Finish Recording Position</b>で補正量を記録します。この時点では画像に適用されず、プレビューが消えます。続いて下の説明に従って<b>Set Position Start</b> / <b>Set Position End</b>を設定し、範囲を確認して<b>Apply Position &amp; Rotation</b>を1回押します。取り消しは<b>Undo last change (Ctrl+Z)</b>です。<b>Cancel Recording</b>は記録中のプレビューを破棄します。</p>
+</li>
+<li>
+<strong>必要なら共通範囲を切り抜く</strong>
+<p>
+<b>Start Crop</b>を押し、Viewerで四角形をドラッグします。内側のドラッグで移動、角のドラッグで大きさを変更できます。<b>Apply Crop</b>で全画像の出力範囲を設定。<b>Undo Crop</b>で戻せます。<b>Clear Crop Box</b>は選択枠だけを消します。余白が必要なら<b>Expand Canvas +100 px each side</b>で四辺を100 pxずつ広げられます。</p>
+</li>
+<li>
+<strong>画像と作業内容を保存する</strong>
+<p>
+<b>Format</b>でPNG（初期値）またはJPEGを選びます。<b>Export to folder</b>は選択先に新しいサブフォルダーを作成します。小さなスタックは<b>Download ZIP (small stacks)</b>でも保存できます。ZIPは符号化済み画像の合計256 MBまでです。どちらも<b>8-bit画像</b>と<code>transforms.json</code>を保存します。</p>
+<p>
+<b>Save transforms.json</b>は変換設定だけを保存し、元画像は含みません。再開するには同じ元画像を同じ順序で読み込み、<b>Load transforms.json</b>を使います。画像数・各画像サイズが一致する必要があります。対応付けは名前ではなく並び順です。ページを閉じる・更新する前に保存してください。</p>
+</li>
+</ol>
+</section>
+
+<section id="range">
+<h2>Start / Endは「手動補正の適用範囲」</h2>
+<p>記録した同じ移動量・回転量を、どの切片に適用するかを指定します。切片番号は1から始まり、元ファイル名の番号とは別です。</p>
+<ol>
+<li>
+<b>Finish Recording Position</b>の直後は、StartとEndの両方が今の切片になります。</li>
+<li>最初の対象切片へ移動し、<b>Set Position Start</b>を押します。</li>
+<li>最後の対象切片へ移動し、<b>Set Position End</b>を押します。</li>
+<li>
+<b>Position range</b>の番号と✓、<b>Apply to slices …</b>を確認してから適用します。</li>
+</ol>
+<div class="callout">
+<strong>例：Start: 34 ✓ / End: 72 ✓</strong>
+<br>「Apply to slices 34–72 (inclusive)」なら34と72を含む全切片に適用します。StartとEndが同じなら1枚だけです。</div>
+<p>未設定は「—」。設定直後はstatusに切片番号が短時間表示され、設定済みボタンにも色が付きます。Start: 72、End: 34のように逆順でも入力値は入れ替わらず、適用範囲34–72と<b>Start &gt; End</b>が表示されます。</p>
+<p>
+<strong>Applyを繰り返し押すと補正が重なります。</strong>誤操作はUndoで戻してください。自動位置合わせを再実行すると自動変換が置き換わりますが、適用済みの手動補正は残るので結果を再確認してください。</p>
+</section>
+
+<section id="controls">
+<h2>キーボード・マウス操作</h2>
+<table>
+<thead>
+<tr>
+<th>操作</th>
+<th>動作</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<kbd>F</kbd> / <kbd>R</kbd>
+</td>
+<td>次 / 前の切片（記録中・処理中は移動しません）。</td>
+</tr>
+<tr>
+<td>Viewer上のホイール</td>
+<td>下で次、上で前。連続イベントを1操作として抑制し、先頭・末尾で止まります。</td>
+</tr>
+<tr>
+<td>
+<kbd>Ctrl</kbd> + ホイール</td>
+<td>Viewerをズーム。画像の出力サイズは変わりません。</td>
+</tr>
+<tr>
+<td>Viewerをドラッグ</td>
+<td>表示を移動。Cropモードでは切り抜き枠を操作します。</td>
+</tr>
+<tr>
+<td>
+<kbd>W A S D</kbd> / <kbd>Q E</kbd>
+</td>
+<td>記録中に移動 / 回転。Shiftで10倍。</td>
+</tr>
+<tr>
+<td>
+<kbd>Ctrl Z</kbd>
+</td>
+<td>記録中以外で直前の変更を取り消し。履歴は最大50操作。</td>
+</tr>
+</tbody>
+</table>
+<p>入力欄・選択欄・スライダーを操作中は切片移動を抑止します。キーやホイールが効かないときは、処理や記録を終え、Viewerをクリックしてから試してください。Viewer外のホイールは通常のスクロールです。移動ボタンやSliceの番号入力も使えます。</p>
+</section>
+
+<section id="formats">
+<h2>対応形式と16-bit TIFF</h2>
+<table>
+<thead>
+<tr>
+<th>項目</th>
+<th>現在のWeb beta</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>一般画像</td>
+<td>JPG / JPEG / PNG</td>
+</tr>
+<tr>
+<td>TIFF</td>
+<td>.tif / .tiff、Classic TIFF、1ファイル1ページ、little / big endian</td>
+</tr>
+<tr>
+<td>TIFFの画素</td>
+<td>符号なし8-bit / 16-bit、grayscale（BlackIsZero / WhiteIsZero）またはRGB</td>
+</tr>
+<tr>
+<td>TIFFの圧縮</td>
+<td>非圧縮、LZW、Zlib/Deflate。Predictor 1 / 2。</td>
+</tr>
+<tr>
+<td>TIFFの配置</td>
+<td>strip形式、RGBはinterleaved、top-left orientation、通常のfill order、alphaなし。</td>
+</tr>
+<tr>
+<td>非対応</td>
+<td>複数ページTIFF、tiled、BigTIFF、planar separate、alpha・追加channel、palette、CMYK、1-bit、signed / float、PackBits / JPEG / CCITT圧縮、その他のorientation・fill order・predictor。BMP / DICOM入力もありません。</td>
+</tr>
+</tbody>
+</table>
+<div class="callout important">
+<strong>16-bit入力の出力も8-bitです。</strong>
+<p>元TIFFは変更しませんが、読み取った16-bitの値を0–65535から0–255へ変換（round(value / 257)）し、表示・位置合わせ・手動補正に使います。出力は8-bit PNG / JPEGです。PNGでも元の16-bit精度は戻りません。</p>
+</div>
+<p>自動コントラスト調整はありません。16-bitの狭い値域だけを使う画像は暗く見える場合があります。16-bit精度の保存、TIFF出力、物理的な画素間隔やICC/EXIF情報の引き継ぎは未実装です。元画像は別途保管してください。</p>
+</section>
+
+<section id="privacy">
+<h2>画像はブラウザ内で処理します</h2>
+<p>
+<strong>読み込んだ画像データは、サーバーへアップロードされません。</strong>画像の読み込み、位置合わせ、保存用データの作成をブラウザ内で行います。</p>
+<p>アプリのコードは公開サイトから取得します。<b>Try demo dataset</b>は公開AlignRefサイトからデモ画像をダウンロードします。これらの通信は、ご自身の画像を送信するものではありません。外部の出典リンクはクリックしたときに開きます。</p>
+</section>
+
+<section id="trouble">
+<h2>困ったときは</h2>
+<h3>TIFFが開けない</h3>
+<p>表示されたファイル名とエラーを確認し、上の対応形式と照合してください。複数ページやtiled TIFFは、対応する単一ページ・strip形式の画像に書き出してから読み込みます。読み込みに失敗した場合は、それまでのスタックを維持します。</p>
+<h3>画像サイズが異なる・余白がある</h3>
+<p>画像は最大幅・高さのキャンバス中央へ配置されます。画像自体は拡大縮小されません。背景色を確認し、必要なら最後に共通範囲をCropしてください。画素の物理的な大きさを自動的に揃える処理はありません。</p>
+<h3>大きなスタックで時間がかかる・ブラウザが重い</h3>
+<p>まず少数の画像で試し、不要なタブを閉じてください。Proxy limitを小さくすると計算負荷を抑えられますが、位置合わせ結果は再確認してください。大きな出力はZIPよりExport to folderを使います。TIFFの1回のdecodeは60秒で打ち切られます。キャンバス上限は1辺32,767 px・100 MPですが、端末のメモリ制限でそれより小さくても処理できない場合があります。</p>
+<h3>Start / Endが意図した番号ではない</h3>
+<p>Finish Recording Positionが両端を現在切片に設定するため、Finishの後に範囲を指定してください。ViewerのSliceとファイル名を確かめて設定し、Apply直前に範囲を読み直します。</p>
+<h3>位置合わせが不自然・警告が出る</h3>
+<p>全切片をoverlayで確認し、必要な範囲を手動補正してください。形の変形や欠損を自動的に修復するツールではありません。失敗した隣接ペアは直前の自動変換を引き継いで警告されるため、警告の先も確認します。</p>
+<h3>保存・中止・再開</h3>
+<p>フォルダー保存が利用できない場合は小さなスタックでZIPを使えます。処理中の<b>Cancel</b>で中止できますが、フォルダーに書き込み済みのファイルは残ります。ページ再読込による作業の自動復元はありません。画像とtransforms.jsonを保存してください。</p>
+</section>
+
+<section id="credits">
+<h2>出典・ライセンス</h2>
+<p>ソフトウェアのコードは<a href="../LICENSE.txt">Apache-2.0</a>です。デモ画像は別に<a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>で提供します。</p>
+<p>デモ：<a href="https://brainarchitecture.org/">Mouse Brain Architecture Project / Brain Architecture Project (BAP)</a>のsubj03。ライセンスの根拠は<a href="https://brainarchitecture.org/policies/">BAP公式Policy</a>、配布元ホストは<a href="https://www.cis.jhu.edu/data.sets/mouse_histology/mba_project_experiment/subj03/">JHU subj03</a>です。奇数切片のみを保持し、共通キャンバス化・JPEG化した132枚を使用しています。</p>
+<p>デモ画像や加工後の画像を共有する際はBAPへの帰属、出典・ライセンスへのリンク、追加加工の説明を保持し、CC BY-SA 4.0で共有してください。<a href="../demo/mouse-brain-subj03/DATA_LICENSE.md">DATA_LICENSE.md</a>はデモ画像の書き出しにも含まれます。BAP/JHUの推奨・承認を意味しません。</p>
+<p>
+<a href="https://github.com/SatoruMuro/AlignRef/blob/main/README.md#citation">関連論文と引用情報</a> · <a href="https://github.com/SatoruMuro/AlignRef/blob/main/web/README.md">技術仕様・既知の制限</a>
+</p>
+</section>
+<footer>
+<a href="../">AlignRef2を開く</a> · <a href="./legacy.html">Legacy workflow</a> · <a href="https://github.com/SatoruMuro/AlignRef/blob/main/README.md">GitHub README</a>
+<p>このガイドは現在のWeb betaの操作を説明します。</p>
+</footer>
+</main>
+</div>
+</body>
+</html>

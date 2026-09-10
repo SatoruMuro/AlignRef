@@ -1,229 +1,77 @@
-# AlignRef
+# AlignRef2 Web beta
 
-👉 **日本語版はこちら:** [README_JP.md](./README_JP.md)  
+**[ブラウザですぐ使う / Launch AlignRef2 →](https://satorumuro.github.io/AlignRef/)**
 
-**AlignRef** is a lightweight desktop application for interactive alignment and preprocessing of serial images  
-(e.g., histological sections, CT/MRI slices, or photographic image sequences).
+**[日本語：使い方](https://satorumuro.github.io/AlignRef/guide/ja.html) · [English: How to use](https://satorumuro.github.io/AlignRef/guide/en.html)**
 
-It provides:
-- Keyboard-based fine adjustment of position and rotation
-- Overlay visualization between adjacent images
-- Batch cropping with a shared ROI
-- Batch export to multiple formats (JPG/PNG/BMP/TIFF/DICOM)
-- Simple, installer-free distribution as a standalone Windows .exe
+Browser-based alignment of serial 2D images. No installation required.
+**AlignRef2 is the recommended workflow for new browser-based work.** The original desktop AlignRef + MultiStackReg workflow remains available under [Legacy workflow](#legacy-workflow).
 
-> 🧪 Designed for anatomical and morphological research workflows, but can be used in any image-based project.
+連続画像の位置合わせをブラウザ内で行う、現在推奨のWeb版です。初めての方は日本語ガイド、またはアプリの **Try demo dataset** から始めてください。
 
----
+## What is AlignRef2?
 
-> **Important — Before Using AlignRef**
-> 
-> AlignRef is designed as a **post-registration fine-adjustment tool**.  
-> For serial histological sections, please perform **automatic registration** first  
-> using ImageJ/Fiji + MultiStackReg.
-> 
-> 👉 **Registration Guide (English)**  
-> https://github.com/SatoruMuro/AlignRef/blob/main/RegistrationGuide.md
-> 
-> 👉 **Registration Guide (Japanese / 日本語)**  
-> https://github.com/SatoruMuro/AlignRef/blob/main/RegistrationGuide_JP.md
+AlignRef2 brings automatic rigid registration, visual review, manual refinement, common cropping and image export into one browser workflow. It aligns adjacent sections using translation and rotation; it does not deform tissue or certify anatomical correspondence. Inspect every result and correct it where needed. MultiStackReg is not required for this Web workflow.
 
----
+## Try the demo
 
-## 📦 Download
+Open [AlignRef2](https://satorumuro.github.io/AlignRef/) and select **Try demo dataset** in **Load images**. It downloads 132 mouse-brain Nissl sections (subj03; 1080 × 840 pixels; about 9.84 MB). No personal images are needed. The demo has not been pre-registered by AlignRef2.
 
-👉 **Direct download (ZIP)**  
-[Download AlignRef.zip via Dropbox](https://www.dropbox.com/scl/fi/dggt20l4g0w8cgq097i35/AlignRef.zip?rlkey=fck23rub5t2edgyxcn0ycnvpq&st=hb6skgpf&dl=1)
+## Features
 
-> The link starts the download automatically. No installer is required.
+- Local automatic rigid registration with a chosen reference and channel.
+- Adjacent overlays and flicker for visual review.
+- F/R and viewer mouse-wheel slice navigation; Ctrl + wheel zoom.
+- Recorded manual translation/rotation with explicit Start/End and inclusive Apply range. These endpoints control **manual correction**, not automatic registration.
+- Common crop, canvas expansion and undo.
+- 8-bit PNG/JPEG folder or ZIP export, plus save/load of transforms.json.
 
----
+## Supported formats
 
-## 💻 System Requirements
+Input: JPG/JPEG, PNG and a tested subset of TIFF (.tif/.tiff): single-page classic strip TIFF, unsigned 8/16-bit grayscale or interleaved RGB, uncompressed/LZW/Deflate, top-left orientation without alpha. [Full TIFF scope and limits](https://satorumuro.github.io/AlignRef/guide/en.html#formats).
 
-- **OS**: Windows 10 or later (64-bit)
-- **RAM**: 8 GB or more recommended (depends on image size and number of images)
-- **GPU**: Not required
-- **.exe**: No Python installation is needed for end users
+**16-bit TIFF can be loaded and aligned, but display, registration and output use 8-bit data.** Values map from 0–65535 to 0–255 without automatic contrast stretching. Output is PNG or JPEG, not TIFF; 16-bit precision and physical spacing metadata are not retained in exported images.
 
----
+Desktop **Chrome and Edge** have been tested. Other browsers and mobile image processing are not certified. The guides can be read on narrow screens.
 
-## 🚀 Installation & Launch
+## Privacy / local processing
 
-1. Download the ZIP file from the link above.
-2. Unzip it and create a folder such as:  
-   `C:\AlignRef\`
-3. Place **all contents** of the ZIP file into that folder  
-   (including `AlignRef.exe` and the `_internal` folder).
+**Your images stay on your device. Images you load are processed locally in your browser and are not uploaded to any server.**
 
-⚠️ **Important Path Notes**
+読み込んだ画像はブラウザ内で処理され、サーバーへアップロードされません。The app downloads its code from this site; **Try demo dataset** downloads public demo images only when clicked. This is distinct from uploading user-loaded images. There is no runtime CDN, analytics client or remote image-processing API.
 
-- Avoid placing AlignRef in folders with:
-  - Very long paths
-  - Japanese characters
-  - Spaces in the path (e.g., Desktop or Documents)
-- Example of a safe path:  
-  `C:\AlignRef\`
-
-4. Double-click `AlignRef.exe` to launch.
-
-> ⚠️ If Windows SmartScreen shows a warning, click **“More info” → “Run anyway”**.  
-> ❗ Do **not delete** the `_internal` folder. It is required for the app to run.
-
----
-
-## 🖼️ Loading and Viewing Images
-
-1. Click **`Load Image Folder`** and select a folder containing your images.
-2. Supported formats include **JPG, PNG, BMP, TIFF, DICOM** (and some others depending on build).
-3. Images are loaded and resized to a unified canvas size.
-4. Use the keyboard to move through images:
-   - `←` / `→` or `F` / `R` / `J` / `U`
-5. Click **`Fit to Window`** to fit the image to the display area.
-
-### 🔢 File Naming Rule
-
-Images should be **sequentially numbered with the same number of digits**.
-
-✅ Correct:
-- `image0001.jpg`
-- `image0002.jpg`
-- `image0003.jpg`
-
-❌ Problematic:
-- `image1.jpg`
-- `image2.jpg`
-- `image10.jpg`
-- `image11.jpg`
-
-Inconsistent numbering will cause **incorrect sorting order** when loading images.
-
----
-
-## 🎨 Canvas Background & Expansion
-
-- Use **`Canvas BG Color`** to switch the background color:
-  - White
-  - Black
-- Click **`Expand Canvas`** to add a **100 px margin on all sides** of every image.  
-  This is useful when you need extra space for alignment adjustments.
-
----
-
-## 🟡 Image Overlay
-
-To visually align adjacent slices:
-
-- **`Overlay Previous Image`**  
-  Overlays the previous image with semi-transparency.
-
-- **`Overlay Next Image`**  
-  Overlays the next image with semi-transparency.
-
-- **`Clear Overlay`**  
-  Removes any overlaid image.
-
-This helps visually confirm alignment between neighboring slices.
-
----
-
-## 🎯 Position Adjustment (Image Alignment)
-
-AlignRef is designed around **keyboard-based alignment**.
-
-1. Click **`Start Recording Position`**.
-2. Use the keyboard to move and rotate the current image:
-
-   **Move**
-   - Up / Down: `W`, `S`, `O`, `L`, `↑`, `↓`
-   - Left / Right: `A`, `D`, `K`, `;`, `←`, `→`
-
-   **Rotate**
-   - Rotate left: `Q`, `I`
-   - Rotate right: `E`, `P`
-
-3. When you are satisfied with the alignment, click **`Finish Recording Position`**.
-4. Set the range of images to apply this transform:
-
-   - Go to the first frame of the range → click **`Set Position Start`**
-   - Go to the last frame of the range → click **`Set Position End`**
-
-5. Click **`Apply Position & Rotation`**  
-   → The recorded transform will be applied to **all images** in the selected range.
-6. If needed, click **`Cancel Applied Position`** to revert the operation.
-
----
-
-## ✂️ Cropping (Batch ROI Trimming)
-
-To remove unwanted surrounding areas from all images:
-
-1. Click **`Start Crop`**.
-2. Click two diagonal corners on the image to define a rectangle.  
-   A **red box** will be displayed.
-3. Click **`Apply Crop`** to crop **all images** using the same box.
-4. Click **`Undo Crop`** to revert the cropping.
-5. Click **`Clear Crop Box`** to remove only the red box (without cropping).
-
----
-
-## 💾 Exporting Aligned Images
-
-1. Choose **`Export Format`**:
-   - JPG
-   - PNG
-   - BMP
-   - TIFF
-   - DICOM
-
-2. Click **`Export Aligned Images`**.
-
-AlignRef will create a new folder automatically, for example:
-
-- `inputname_aligned_20251113_123456`
-
-All processed images (after alignment/cropping) are exported to that folder.
-
----
-
-## ⌨️ Keyboard Shortcuts
-
-| Action          | Keys                             |
-|-----------------|----------------------------------|
-| Next image      | `→`, `F`, `J`, `PageDown`       |
-| Previous image  | `←`, `R`, `U`, `PageUp`         |
-| Zoom in/out     | `Ctrl + Mouse Wheel`            |
-| Move up/down    | `W`, `S`, `O`, `L`, `↑`, `↓`    |
-| Move left/right | `A`, `D`, `K`, `;`, `←`, `→`    |
-| Rotate left     | `Q`, `I`                        |
-| Rotate right    | `E`, `P`                        |
-
----
-
-## 🧑‍🔬 Use Cases
-
-- Alignment of serial histological or anatomical sections  
-- Preprocessing image stacks before 3D reconstruction  
-- Manual refinement of registration in research workflows  
-- Simple batch cropping and export for clinical or educational figures
-
-AlignRef is particularly useful as a **pre-processing step** before 3D reconstruction pipelines.
-
----
-
-## 🧩 Development Notes
-
-- Language: Python (PyQt-based), packaged as a standalone `.exe`
-- Platform: Windows
-- Repository: This GitHub repo hosts the **source code**, **issues**, and **documentation**.
-
-Contributions, bug reports, and feature requests are welcome via **GitHub Issues**.
-
----
+Save your images and transforms before closing, reloading or replacing a stack: work is session-local.
 
 ## Citation
 
-If you use **AlignRef** in your academic work, please cite:
+If you use AlignRef in academic work, please cite the related workflow publication:
 
 Muro, S., Ibara, T., Nimura, A. & Akita, K. (2026) Two-step workflow integrating automatic registration and manual refinement for the accurate alignment of serial histological sections in 3D reconstruction. Journal of Anatomy, 00, 1–6. Available from: https://doi.org/10.1111/joa.70203
 
+This citation describes the original two-step workflow; it is not a validation of the independent AlignRef2 Web registration engine. For reproducibility, also record the AlignRef2 commit and settings used.
+
+## License and demo attribution
+
+- **Software code: [Apache-2.0](./LICENSE).** Bundled runtime dependency licenses are in [third-party notices](./web/public/THIRD_PARTY_NOTICES.txt).
+- **Demo images: [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/), separately from software.** Attribution: [Mouse Brain Architecture Project / Brain Architecture Project (BAP)](https://brainarchitecture.org/), under the [BAP Policy](https://brainarchitecture.org/policies/).
+- Source host: [JHU subj03 distribution](https://www.cis.jhu.edu/data.sets/mouse_histology/mba_project_experiment/subj03/). The source files were obtained from the JHU-hosted distribution of the Mouse Brain Architecture Project subj03 dataset.
+- Demo preparation: odd-numbered slices only, a common 1080 × 840 canvas, and JPEG conversion. Supplied JPEG bytes are distributed unchanged. See [DATA_LICENSE.md](./web/public/demo/mouse-brain-subj03/DATA_LICENSE.md) for attribution, source publication and redistribution requirements. BAP/JHU endorsement is not implied.
+
+## Legacy workflow
+
+The original **AlignRef + MultiStackReg** workflow remains available for reproducibility and compatibility with previous analyses. Its guides, desktop download and source code are retained.
+
+旧 AlignRef と MultiStackReg を併用する従来ワークフローは、過去の解析との互換性・再現性のため Legacy workflow として引き続き提供します。
+
+- [Legacy workflow overview / 従来方式の案内](https://satorumuro.github.io/AlignRef/guide/legacy.html)
+- Original desktop guide and download: [English](./LEGACY.md) / [日本語](./README_JP.md)
+- MultiStackReg preparation: [English](./RegistrationGuide.md) / [日本語](./RegistrationGuide_JP.md)
+
+## Developer / technical information
+
+- [Web implementation, local development, tests and limitations](./web/README.md)
+- [Original Python application](./AlignRef.py) and [desktop UI](./ui_AlignRef.py)
+- [GitHub Issues](https://github.com/SatoruMuro/AlignRef/issues) for bug reports and feature requests
+- [Publication announcement drafts](./docs/ANNOUNCEMENTS.md)
+
+GitHub Pages publishes the tested web/dist build from main using [GitHub Actions](./.github/workflows/web-beta.yml). Pull requests run validation before merging.

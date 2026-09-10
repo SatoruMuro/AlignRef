@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="AlignRef2 beta: local browser rigid registration, visual QC, manual refinement and batch export of serial images."
+    />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'"
+    />
+    <link rel="icon" href="data:," />
+    <title>AlignRef2 — Web beta</title>
+  </head>
+  <body>
+    <header>
+      <div class="brand">AlignRef<span>2</span> <small>WEB BETA</small></div>
+      <p>Automatic Registration + Manual Refinement for Serial Images</p>
+      <span class="privacy">● Your images stay on your device</span>
+      <nav class="guide-links" aria-label="User guides">
+        <a href="./guide/en.html" target="_blank" rel="noopener">How to use</a>
+        <a href="./guide/ja.html" target="_blank" rel="noopener" lang="ja">使い方</a>
+      </nav>
+    </header>
+    <main>
+      <aside aria-label="Workflow">
+        <section id="load-section">
+          <h2><b>1</b> Load images</h2>
+          <p>JPG / JPEG / PNG / TIFF · natural filename order</p>
+          <p class="local-privacy">Your images stay on your device. Images you load are processed locally in your browser and are not uploaded to any server.</p>
+          <div class="row">
+            <button id="load" class="primary">Choose images</button
+            ><button id="folder">Choose folder</button>
+          </div>
+          <input
+            id="files"
+            type="file"
+            accept=".jpg,.jpeg,.png,.tif,.tiff"
+            multiple
+            hidden
+          />
+          <div class="demo-entry">
+            <button id="load-demo">Try demo dataset</button>
+            <p>Mouse brain Nissl serial sections<br />132 images · 1080 × 840 · subj03</p>
+            <details>
+              <summary>Demo data info</summary>
+              <p>Every other section retained. Demo data: <a href="https://brainarchitecture.org/" target="_blank" rel="noopener">Mouse Brain Architecture Project (BAP)</a>.</p>
+              <p>Images: <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener">CC BY-SA 4.0</a>, under the <a href="https://brainarchitecture.org/policies/" target="_blank" rel="noopener">BAP Policy</a>. Source host: <a href="https://www.cis.jhu.edu/data.sets/mouse_histology/mba_project_experiment/subj03/" target="_blank" rel="noopener">JHU subj03 distribution</a>.</p>
+              <p>Prepared for this demo: odd-numbered sections only, common canvas, JPEG. <a href="./demo/mouse-brain-subj03/DATA_LICENSE.md" target="_blank" rel="noopener">Data license &amp; attribution</a>. AlignRef2 code is separately Apache-2.0. No BAP or JHU endorsement is implied.</p>
+              <p>Downloads about 9.84 MB only when you click. Choose images or a folder again to replace the demo stack.</p>
+            </details>
+          </div>
+          <input
+            id="folders"
+            type="file"
+            accept=".jpg,.jpeg,.png,.tif,.tiff"
+            webkitdirectory
+            multiple
+            hidden
+          />
+          <label
+            >Canvas background
+            <select id="background">
+              <option value="white">White</option>
+              <option value="black">Black</option>
+            </select></label
+          >
+          <details>
+            <summary>TIFF support &amp; bit depth</summary>
+            <p>Single-page, strip-based unsigned 8/16-bit grayscale or RGB TIFF; uncompressed, LZW or Deflate. Top-left orientation, interleaved samples, no alpha.</p>
+            <p>16-bit samples map from 0–65535 to 0–255. Display, registration and PNG/JPEG export are 8-bit; the original TIFF file is preserved. There is no automatic contrast stretch.</p>
+            <p>Multi-page, tiled, BigTIFF, signed/float, palette/CMYK, alpha, PackBits/JPEG/CCITT and other orientations are not supported. The TIFF decoder is bundled locally; no runtime CDN.</p>
+          </details>
+          <button id="expand" data-stack>
+            Expand Canvas +100 px each side
+          </button>
+          <p id="stack-info">
+            Original pixels preserved. Smaller images are center-padded.
+          </p>
+        </section>
+        <section>
+          <h2><b>2</b> Automatic registration</h2>
+          <div class="row">
+            <label
+              >Channel<select id="channel">
+                <option>Gray</option>
+                <option>Red</option>
+                <option>Green</option>
+                <option>Blue</option>
+              </select></label
+            ><label
+              >Proxy limit<select id="proxy">
+                <option>512</option>
+                <option selected>768</option>
+                <option>1024</option>
+                <option>1536</option>
+              </select></label
+            >
+          </div>
+          <label
+            >Reference<select id="reference">
+              <option value="middle">Middle slice</option>
+              <option value="current">Current slice</option>
+            </select></label
+          >
+          <button id="register" class="primary" data-stack>
+            Run Rigid Registration
+          </button>
+          <p>
+            Translation + rotation only. Pairwise alignment outward from the
+            reference. Review every slice.
+          </p>
+          <p id="registration-status">Local registration engine ready.</p>
+          <details><summary>Registration warnings</summary><p id="registration-warnings">No registration run for this stack.</p></details>
+        </section>
+        <section>
+          <h2><b>3</b> Manual refinement</h2>
+          <div class="row">
+            <button id="overlay-prev" data-stack>Previous image overlay</button
+            ><button id="overlay-next" data-stack>Next image overlay</button>
+          </div>
+          <label
+            >Overlay opacity
+            <input
+              id="opacity"
+              type="range"
+              min="0"
+              max="1"
+              value="0.5"
+              step="0.05"
+          /></label>
+          <div class="row">
+            <button id="clear-overlay" data-stack>Clear overlay</button
+            ><label class="check"
+              ><input id="flicker" type="checkbox" /> Flicker</label
+            >
+          </div>
+          <button id="record" data-stack>Start Recording Position</button>
+          <div class="row">
+            <button id="finish" data-stack>Finish Recording Position</button
+            ><button id="cancel-record" data-stack>Cancel Recording</button>
+          </div>
+          <output id="recorded">No correction recorded</output>
+          <p>
+            <kbd>W A S D</kbd> move 1 px · <kbd>Q E</kbd> rotate 0.1°<br /><kbd
+              >Shift</kbd
+            >
+            ×10 · active while recording
+          </p>
+          <div class="position-range" aria-live="polite">
+            <strong>Position range</strong>
+            <span>Start: <output id="position-start">—</output></span>
+            <span>End: <output id="position-end">—</output></span>
+          </div>
+          <div class="row">
+            <button id="range-start" data-stack>Set Position Start</button
+            ><button id="range-end" data-stack>Set Position End</button>
+          </div>
+          <output id="range">Apply range: set Start and End.</output>
+          <button id="apply-range" class="accent" data-stack>
+            Apply Position &amp; Rotation
+          </button>
+          <button id="undo" data-stack>Undo last change (Ctrl+Z)</button>
+        </section>
+        <section>
+          <h2><b>4</b> Crop</h2>
+          <div class="row">
+            <button id="start-crop" data-stack>Start Crop</button
+            ><button id="clear-crop" data-stack>Clear Crop Box</button>
+          </div>
+          <p>
+            Drag a rectangle in the viewer. Drag inside to move; drag corners to
+            resize.
+          </p>
+          <div class="crop-fields">
+            <label>X<input id="crop-x" type="number" step="1" /></label
+            ><label>Y<input id="crop-y" type="number" step="1" /></label
+            ><label
+              >Width<input
+                id="crop-width"
+                type="number"
+                min="1"
+                step="1" /></label
+            ><label
+              >Height<input id="crop-height" type="number" min="1" step="1"
+            /></label>
+          </div>
+          <div class="row">
+            <button id="apply-crop" data-stack>Apply Crop</button
+            ><button id="undo-crop" data-stack>Undo Crop</button>
+          </div>
+        </section>
+        <section>
+          <h2><b>5</b> Export</h2>
+          <div class="row">
+            <label
+              >Format<select id="format">
+                <option value="png">PNG (lossless)</option>
+                <option value="jpeg">JPEG</option>
+              </select></label
+            ><label
+              >JPEG quality<input
+                id="quality"
+                type="number"
+                min="0.1"
+                max="1"
+                step="0.05"
+                value="0.95"
+            /></label>
+          </div>
+          <button id="export-folder" class="primary" data-stack>
+            Export to folder</button
+          ><button id="export-zip" data-stack>
+            Download ZIP (small stacks)
+          </button>
+          <div class="row">
+            <button id="export-transforms" data-stack>
+              Save transforms.json</button
+            ><button id="import-transforms" data-stack>
+              Load transforms.json
+            </button>
+          </div>
+          <input id="transform-file" type="file" accept=".json" hidden />
+          <p id="demo-export-notice" hidden>Demo image exports: CC BY-SA 4.0. When sharing adaptations, retain BAP credit, link the license and describe your changes. DATA_LICENSE.md is included in image exports; AlignRef2 code remains Apache-2.0.</p>
+          <p>
+            Transforms map by natural slice order; count and each source size
+            must match. ZIP is limited to 256 MB of encoded files.
+          </p>
+        </section>
+        <footer>
+          <a href="./LICENSE.txt" target="_blank" rel="noopener">Source code: Apache-2.0</a>
+          ·
+          <a href="./THIRD_PARTY_NOTICES.txt" target="_blank" rel="noopener"
+            >Third-party notices</a
+          >
+        </footer>
+      </aside>
+      <div class="workspace">
+        <nav class="toolbar" aria-label="Viewer">
+          <button id="prev" data-stack>← Previous</button
+          ><label class="slice-number"
+            >Slice
+            <input
+              id="slice"
+              type="number"
+              min="1"
+              value="1"
+              aria-label="Current slice"
+            /><span id="count">/ 0</span></label
+          ><button id="next" data-stack>Next →</button
+          ><span class="spacer"></span
+          ><button id="fit" data-stack>Fit to Window</button
+          ><button id="zoom-out" data-stack aria-label="Zoom out">−</button
+          ><output id="zoom">100%</output
+          ><button id="zoom-in" data-stack aria-label="Zoom in">+</button>
+        </nav>
+        <p class="navigation-hint">Slice navigation: <kbd>R</kbd> / <kbd>←</kbd> Previous · <kbd>F</kbd> / <kbd>→</kbd> Next<br />Mouse wheel ↑ Previous / ↓ Next · <kbd>Ctrl</kbd> + wheel: Zoom</p>
+        <div class="image-heading">
+          <strong id="filename">No stack loaded</strong
+          ><span id="dimensions">—</span>
+        </div>
+        <div
+          id="viewer"
+          tabindex="0"
+          aria-label="Image viewer. Use keyboard shortcuts while recording."
+        >
+          <canvas id="canvas" hidden></canvas>
+          <div id="empty">
+            <strong>Start with your serial images</strong>
+            <p>
+              Choose a folder or multiple images in step 1.<br />Align, inspect
+              and refine — entirely in your browser.
+            </p>
+            <span>01 LOAD → 02 REGISTER → 03 REFINE → 04 CROP → 05 EXPORT</span>
+          </div>
+        </div>
+        <div class="readout">
+          <span id="transform-info">Rigid transform: —</span
+          ><span id="qc">QC: —</span>
+        </div>
+        <div class="statusbar">
+          <p id="status" role="status" aria-live="polite">
+            Ready. Chrome / Edge desktop recommended.
+          </p>
+          <button id="cancel-job" hidden>Cancel operation</button>
+        </div>
+        <details>
+          <summary>Keyboard shortcuts &amp; beta limits</summary>
+          <p>
+            Outside recording: ←/→, R/F, U/J, PageUp/PageDown navigate. During
+            recording: WASD, OKL;, arrows translate; Q/I and E/P rotate. Shift
+            gives 10 px / 1°. Over the viewer, wheel up/down selects the previous/next slice (one step per burst; pause 180 ms between bursts). Ctrl+wheel zooms. Wheel navigation pauses while recording, processing or editing a form field. Drag the viewer to pan outside
+            crop mode. Finish stores a correction only; Apply changes the
+            selected range once.
+          </p>
+          <p>
+            Designed for adjacent slices with similar content, roughly ±30°
+            rotation and moderate displacement. Low-texture, repetitive, damaged
+            or substantially different slices may fail. QC correlation is an
+            image similarity indicator, not a scientific accuracy estimate. No
+            DICOM, 16-bit export/preservation, scale or deformation in this beta. See step 1 for the supported TIFF subset.
+            Save transforms before closing or loading another stack.
+          </p>
+        </details>
+      </div>
+    </main>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

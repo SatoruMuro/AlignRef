@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Align, review and export a sequence of 2D images in your browser. No installation required.">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'none'; style-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'none'">
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="./guide.css">
+<title>AlignRef2 Web beta — Quick Start Guide | AlignRef2</title>
+</head>
+<body>
+<a class="skip" href="#content">Skip to content</a>
+<header>
+<a class="brand" href="../">AlignRef<span>2</span> <small>WEB BETA</small>
+</a>
+<nav aria-label="Language and application">
+<a href="./ja.html" lang="ja" >日本語</a>
+<a href="./en.html" lang="en" aria-current="page">English</a>
+<a class="launch" href="../">Launch app ↗</a>
+</nav>
+</header>
+<div class="layout">
+<aside>
+<nav aria-label="Contents">
+<p class="eyebrow">ON THIS PAGE</p>
+<a href="#start">Try it now</a>
+<a href="#workflow">Basic workflow</a>
+<a href="#range">Start / End explained</a>
+<a href="#controls">Keyboard & mouse</a>
+<a href="#formats">Formats & 16-bit</a>
+<a href="#privacy">Privacy</a>
+<a href="#trouble">Troubleshooting</a>
+<a href="#credits">Credits & licenses</a>
+<a href="./legacy.html">Legacy workflow</a>
+</nav>
+</aside>
+<main id="content">
+<p class="eyebrow">SERIAL IMAGE ALIGNMENT</p>
+<h1>AlignRef2 Web beta — Quick Start Guide</h1>
+<p class="lead">Align, review and export a sequence of 2D images in your browser. No installation required.</p>
+<section id="start">
+<h2>Start with the demo</h2>
+<p>AlignRef2 aligns serial images, such as histological sections, using translation and rotation. Automatic registration, visual review, manual correction, common cropping and export are available in one browser workflow. The original AlignRef + MultiStackReg instructions remain available as the <a href="./legacy.html">Legacy workflow</a>.</p>
+<p>
+<a class="button" href="../">Launch AlignRef2 →</a>
+</p>
+<p>Public URL: <a href="https://satorumuro.github.io/AlignRef/">https://satorumuro.github.io/AlignRef/</a>
+</p>
+<p>Select <b>Load images → Try demo dataset</b> to load 132 mouse-brain sections without supplying your own files. About 9.84 MB is downloaded when you click. The demo has not been pre-registered by AlignRef2.</p>
+<div class="callout">
+<strong>Use desktop Chrome or Edge.</strong>
+<br>The application has been checked in Google Chrome and Microsoft Edge on Windows. Other browsers and mobile image processing are not certified. This guide also fits narrow screens.</div>
+</section>
+
+<section id="workflow">
+<h2>Basic workflow</h2>
+<ol class="steps">
+<li>
+<strong>Load your images</strong>
+<p>Use <b>Choose images</b> for multiple files or <b>Choose folder</b> for a directory. Prepare one file per section. Filenames are sorted naturally: image1, image2, image10. Loading another stack replaces the current work, so save first.</p>
+</li>
+<li>
+<strong>Check the order and canvas</strong>
+<p>Check <b>Slice</b> and the filename above the viewer. Press <kbd>F</kbd> for next or <kbd>R</kbd> for previous, or use the mouse wheel over the viewer. <b>Fit to Window</b> shows the whole image. Different image sizes are centered on a common canvas using the largest width and height, without scaling the source images. Set padding to White or Black with <b>Canvas background</b>.</p>
+</li>
+<li>
+<strong>Run automatic registration</strong>
+<p>Under <b>Automatic registration</b>, choose <b>Channel</b>: Gray, Red, Green or Blue. Gray and the default <b>Proxy limit</b> of 768 are a starting point. Proxy limit sets the longest side of the reduced image used for computation; it does not reduce export dimensions.</p>
+<p>For <b>Reference</b>, <b>Middle slice</b> uses the middle image; <b>Current slice</b> uses the image you are viewing. Select <b>Run Rigid Registration</b>. Adjacent pairs are aligned outward from the reference across the entire loaded stack. <strong>Set Position Start / End do not limit automatic registration.</strong>
+</p>
+</li>
+<li>
+<strong>Review every result</strong>
+<p>Use <b>Previous image overlay</b> or <b>Next image overlay</b>, adjust <b>Overlay opacity</b>, or turn on <b>Flicker</b> to alternate images. Read <b>Registration warnings</b>. A high correlation score does not establish anatomical correspondence. Missing tissue, low contrast, large shifts and changes in shape may require correction.</p>
+</li>
+<li>
+<strong>Record and apply a manual correction</strong>
+<p>Go to a section to use for the correction, show a neighboring overlay and select <b>Start Recording Position</b>. Use <kbd>W A S D</kbd> to move by 1 px and <kbd>Q E</kbd> to rotate by 0.1°. Hold <kbd>Shift</kbd> for ten times the step. Slice navigation is locked while recording.</p>
+<p>Select <b>Finish Recording Position</b> to store the correction. This removes the preview without applying it. Set <b>Set Position Start</b> and <b>Set Position End</b> as described below, check the range, then select <b>Apply Position &amp; Rotation</b> once. Use <b>Undo last change (Ctrl+Z)</b> to undo an application. <b>Cancel Recording</b> discards a recording preview.</p>
+</li>
+<li>
+<strong>Crop if needed</strong>
+<p>Select <b>Start Crop</b> and drag a rectangle in the viewer. Drag inside to move it or drag a corner to resize it. <b>Apply Crop</b> sets a common output region for every image; <b>Undo Crop</b> restores the previous region. <b>Clear Crop Box</b> removes only the pending selection. To add space, use <b>Expand Canvas +100 px each side</b>.</p>
+</li>
+<li>
+<strong>Save images and settings</strong>
+<p>Choose PNG (default) or JPEG under <b>Format</b>. <b>Export to folder</b> creates a new subfolder in the location you select. For small stacks, use <b>Download ZIP (small stacks)</b>; the encoded image files are limited to 256 MB in total. Both export <b>8-bit images</b> and <code>transforms.json</code>.</p>
+<p>
+<b>Save transforms.json</b> saves transform settings only, not source images. To resume, load the same original images in the same order, then select <b>Load transforms.json</b>. Image count and individual dimensions must match. Transforms map by order, not by filename. Save before closing or reloading the page.</p>
+</li>
+</ol>
+</section>
+
+<section id="range">
+<h2>Start / End define the manual correction range</h2>
+<p>The endpoints select which sections receive the same recorded translation and rotation. Slice numbers start at 1 and are distinct from numbers in filenames.</p>
+<ol>
+<li>After <b>Finish Recording Position</b>, both endpoints are set to the current slice.</li>
+<li>Go to the first desired section and select <b>Set Position Start</b>.</li>
+<li>Go to the last desired section and select <b>Set Position End</b>.</li>
+<li>Check the values and checkmarks under <b>Position range</b>, and the <b>Apply to slices …</b> message, before applying.</li>
+</ol>
+<div class="callout">
+<strong>Example: Start: 34 ✓ / End: 72 ✓</strong>
+<br>“Apply to slices 34–72 (inclusive)” includes both endpoints. Equal endpoints apply the correction to one image.</div>
+<p>Unset values appear as “—”. Setting an endpoint briefly shows its slice number in the status message and marks the button. Reversed endpoints retain their entered order: Start: 72 / End: 34 displays the application range 34–72 and <b>Start &gt; End</b>.</p>
+<p>
+<strong>Each additional click on Apply adds the correction again.</strong> Undo an accidental application. Re-running automatic registration replaces the automatic transforms but retains applied manual corrections, so review the combined result afterward.</p>
+</section>
+
+<section id="controls">
+<h2>Keyboard &amp; mouse</h2>
+<table>
+<thead>
+<tr>
+<th>Control</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<kbd>F</kbd> / <kbd>R</kbd>
+</td>
+<td>Next / previous section, outside recording and processing.</td>
+</tr>
+<tr>
+<td>Wheel over viewer</td>
+<td>Down: next. Up: previous. Continuous events are grouped to avoid skipping many slices. Navigation stops at the ends.</td>
+</tr>
+<tr>
+<td>
+<kbd>Ctrl</kbd> + wheel</td>
+<td>Zoom the viewer without changing export dimensions.</td>
+</tr>
+<tr>
+<td>Drag in viewer</td>
+<td>Pan the view, or edit the crop rectangle in Crop mode.</td>
+</tr>
+<tr>
+<td>
+<kbd>W A S D</kbd> / <kbd>Q E</kbd>
+</td>
+<td>Move / rotate while recording. Shift multiplies the step by ten.</td>
+</tr>
+<tr>
+<td>
+<kbd>Ctrl Z</kbd>
+</td>
+<td>Undo the last change outside recording; up to 50 operations are retained.</td>
+</tr>
+</tbody>
+</table>
+<p>Slice navigation is suppressed while editing input fields, menus or sliders. If shortcuts or wheel navigation do not respond, finish the active operation or recording, then click the viewer. Wheel events outside the viewer scroll normally. Navigation buttons and the Slice number field are also available.</p>
+</section>
+
+<section id="formats">
+<h2>Supported formats and 16-bit TIFF</h2>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Current Web beta</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Standard images</td>
+<td>JPG / JPEG / PNG</td>
+</tr>
+<tr>
+<td>TIFF container</td>
+<td>.tif / .tiff; classic TIFF; one page per file; little- or big-endian.</td>
+</tr>
+<tr>
+<td>TIFF samples</td>
+<td>Unsigned 8-bit or 16-bit grayscale (BlackIsZero / WhiteIsZero) or RGB.</td>
+</tr>
+<tr>
+<td>TIFF compression</td>
+<td>Uncompressed, LZW, Zlib/Deflate; predictor 1 or 2.</td>
+</tr>
+<tr>
+<td>TIFF layout</td>
+<td>Strips, interleaved RGB, top-left orientation, normal fill order, no alpha.</td>
+</tr>
+<tr>
+<td>Not supported</td>
+<td>Multi-page TIFF, tiles, BigTIFF, planar-separated RGB, alpha/extra channels, palette, CMYK, 1-bit, signed/float, PackBits/JPEG/CCITT compression, other orientations/fill orders/predictors. BMP and DICOM input are also unavailable.</td>
+</tr>
+</tbody>
+</table>
+<div class="callout important">
+<strong>16-bit input still produces 8-bit output.</strong>
+<p>The original TIFF file is unchanged. Decoded 16-bit values are mapped from 0–65535 to 0–255 using round(value / 257) for display, registration and manual refinement. Export is 8-bit PNG or JPEG. PNG does not restore the original 16-bit precision.</p>
+</div>
+<p>No automatic contrast stretching is applied. Images occupying only a small part of the 16-bit range may appear dark. Preserving 16-bit precision, TIFF export and round-trip retention of physical pixel spacing or ICC/EXIF metadata are not implemented. Keep your original images separately.</p>
+</section>
+
+<section id="privacy">
+<h2>Your images stay on your device</h2>
+<p>
+<strong>Images you load are processed locally in your browser and are not uploaded to any server.</strong> Loading, alignment and preparation of exports run in the browser.</p>
+<p>The application code is downloaded from this site. <b>Try demo dataset</b> downloads public images from the AlignRef site when clicked. These requests do not upload your local images. External source links open only when you follow them.</p>
+</section>
+
+<section id="trouble">
+<h2>Troubleshooting</h2>
+<h3>A TIFF will not open</h3>
+<p>Read the filename and error, and check the supported subset above. Export multi-page or tiled TIFFs as supported single-page, strip-based files before loading. A failed load leaves the previous stack intact.</p>
+<h3>Image sizes differ or padding appears</h3>
+<p>Images are centered on a canvas with the maximum width and height, without resizing. Check the background color and crop to a common region if needed. Physical pixel sizes are not automatically harmonized.</p>
+<h3>A large stack is slow or the browser is heavy</h3>
+<p>Try a small subset first and close unused tabs. A smaller Proxy limit reduces computation, but inspect the resulting alignment. Prefer Export to folder for large outputs. Each TIFF decode times out after 60 seconds. The canvas limit is 32,767 px per side and 100 MP; device memory may impose a lower practical limit.</p>
+<h3>Start / End show unexpected values</h3>
+<p>Finish Recording Position sets both endpoints to the current slice, so choose the range after finishing. Check Slice and the filename before setting each endpoint, and read the range again before Apply.</p>
+<h3>Alignment looks wrong or reports warnings</h3>
+<p>Inspect every section with overlays and manually correct the necessary range. Registration does not repair tissue deformation or missing content. A failed adjacent pair inherits the preceding automatic transform and is flagged; inspect downstream sections as well.</p>
+<h3>Saving, cancelling and resuming</h3>
+<p>If folder export is unavailable, use ZIP for a small stack. <b>Cancel</b> stops an active operation, but files already written to an export folder remain there. Work is not automatically restored after a reload. Save exported images and transforms.json.</p>
+</section>
+
+<section id="credits">
+<h2>Credits &amp; licenses</h2>
+<p>Software code is licensed under <a href="../LICENSE.txt">Apache-2.0</a>. Demo images are separately licensed under <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>.</p>
+<p>The demo is derived from subj03 of the <a href="https://brainarchitecture.org/">Mouse Brain Architecture Project / Brain Architecture Project (BAP)</a>. The license basis is the <a href="https://brainarchitecture.org/policies/">BAP Policy</a>. The source files were obtained from the <a href="https://www.cis.jhu.edu/data.sets/mouse_histology/mba_project_experiment/subj03/">JHU-hosted distribution</a> of the Mouse Brain Architecture Project subj03 dataset. JHU is the source host.</p>
+<p>Demo preparation retained odd-numbered sections, used a common canvas and converted images to JPEG. The 132 supplied JPEGs are distributed unchanged. When sharing demo images or adaptations, retain BAP attribution, source/license links and a description of additional changes, and share adaptations under CC BY-SA 4.0. <a href="../demo/mouse-brain-subj03/DATA_LICENSE.md">DATA_LICENSE.md</a> is included with demo image exports. No BAP/JHU endorsement is implied.</p>
+<p>
+<a href="https://github.com/SatoruMuro/AlignRef/blob/main/README.md#citation">Related publication and citation</a> · <a href="https://github.com/SatoruMuro/AlignRef/blob/main/web/README.md">Technical details and limitations</a>
+</p>
+</section>
+<footer>
+<a href="../">Launch AlignRef2</a> · <a href="./legacy.html">Legacy workflow</a> · <a href="https://github.com/SatoruMuro/AlignRef/blob/main/README.md">GitHub README</a>
+<p>This guide describes the current Web beta.</p>
+</footer>
+</main>
+</div>
+</body>
+</html>
