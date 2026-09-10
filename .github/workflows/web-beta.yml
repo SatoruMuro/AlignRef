@@ -2,9 +2,9 @@ name: AlignRef2 Web beta
 on:
   push:
     branches: [main, codex/alignref2-web-beta]
-    paths: ['web/**', '.github/workflows/web-beta.yml']
+    paths: ['web/**', '*.md', 'docs/**', '.github/workflows/web-beta.yml']
   pull_request:
-    paths: ['web/**', '.github/workflows/web-beta.yml']
+    paths: ['web/**', '*.md', 'docs/**', '.github/workflows/web-beta.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -38,7 +38,7 @@ jobs:
         with:
           path: web/dist
   deploy:
-    if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/codex/alignref2-web-beta')
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
     needs: build-test
     runs-on: ubuntu-latest
     permissions:

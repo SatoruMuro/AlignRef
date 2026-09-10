@@ -1,5 +1,8 @@
 # Registration Guide for Serial Histological Sections (MultiStackReg + AlignRef)
 
+> **Legacy workflow** — These instructions describe the original AlignRef + MultiStackReg workflow, retained for reproducibility and compatibility with previous analyses. For new browser-based work, start with [AlignRef2](https://satorumuro.github.io/AlignRef/) and its [English guide](https://satorumuro.github.io/AlignRef/guide/en.html) / [日本語ガイド](https://satorumuro.github.io/AlignRef/guide/ja.html). [Original desktop guide](./LEGACY.md).
+
+
 This page provides a complete guide for **automatic registration (alignment)** of serial histological sections prior to segmentation.
 AlignRef is designed to be used **after** initial automatic registration (e.g., using MultiStackReg), for fine-tuning alignment across the sequence.
 

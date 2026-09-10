@@ -57,6 +57,15 @@ header p {
   font-size: 13px;
   white-space: nowrap;
 }
+.guide-links {
+  display: flex;
+  gap: 12px;
+  font-size: 13px;
+  white-space: nowrap;
+}
+@media (min-width: 1001px) and (max-width: 1250px) {
+  header p { display: none; }
+}
 main {
   display: grid;
   grid-template-columns: 335px minmax(0, 1fr);
@@ -377,6 +386,7 @@ body.busy #status {
   }
 }
 @media (max-width: 700px) {
+  header { flex-wrap: wrap; }
   header p {
     display: none;
   }

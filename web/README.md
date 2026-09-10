@@ -4,9 +4,13 @@ Automatic Registration + Manual Refinement for Serial Images.
 
 **Beta URL:** https://satorumuro.github.io/AlignRef/
 
-The supported AlignRef Python application, its README files, registration guides,
-license and existing distributions are unchanged. This directory is an additive,
-independent browser application. No image is uploaded; no runtime CDN, remote font,
+**User guides:** [日本語](https://satorumuro.github.io/AlignRef/guide/ja.html) ·
+[English](https://satorumuro.github.io/AlignRef/guide/en.html).
+This README contains developer and technical details.
+
+The original AlignRef Python application, license and existing distributions are
+unchanged. Original documentation is retained under [Legacy workflow](https://satorumuro.github.io/AlignRef/guide/legacy.html).
+This directory is an independent browser application. No image is uploaded; no runtime CDN, remote font,
 telemetry, OpenCV bootstrap or server component is used.
 
 ## Run and verify
@@ -127,7 +131,7 @@ uses 1 px/0.1 degree preview steps, records before inclusive range application,
 shows adjacent overlays at 50%, and expands 100 px per side. Its internal JPEG
 conversion and pixel-rewriting crop/apply mechanisms are intentionally replaced
 in the Web application by source preservation and transform state. Existing
-README guidance about equal-digit names still describes the unchanged desktop
+Legacy guide guidance about equal-digit names still describes the unchanged desktop
 version; Web uses natural sort. No desktop fixes or distribution changes are made.
 
 ## Dependencies and license
@@ -157,11 +161,15 @@ and requests leaving the site origin.
 
 `.github/workflows/web-beta.yml` runs install, unit tests, build, Chromium end-to-end
 checks, uploads the static artifact, then uses official GitHub Pages Actions.
-PRs run validation only. The beta work branch can deploy without merging into
-main; main can deploy after review. Repository Pages must use **GitHub Actions**
-and its `github-pages` environment must permit the beta branch. Workflow dispatch
-requires the workflow to exist on the default branch; the beta initially deploys
-via its push event instead. No Python dependency or packaging action is changed.
+PRs and beta-branch pushes run validation only. **Only main deploys** after the
+build and tests succeed, so a later beta-branch push cannot replace production.
+Repository Pages uses **GitHub Actions** and the `github-pages` environment must
+permit main. Workflow dispatch on main also validates before deployment.
+No Python dependency or packaging action is changed.
+
+Static user guides live in `public/guide/` and are copied unchanged into the Pages
+artifact by Vite. They use local CSS, no JavaScript, analytics or external fonts.
+Application help links open a new tab to keep the current stack available.
 
 ## Known beta limits
 

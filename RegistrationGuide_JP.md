@@ -1,5 +1,8 @@
 # 連続切片の位置合わせガイド（MultiStackReg + AlignRef）
 
+> **Legacy workflow（従来方式）** — このページは旧 AlignRef と MultiStackReg を併用する手順です。過去の解析との互換性・再現性のため残しています。現在の推奨Web版は [AlignRef2](https://satorumuro.github.io/AlignRef/)。[日本語の使い方](https://satorumuro.github.io/AlignRef/guide/ja.html) / [English guide](https://satorumuro.github.io/AlignRef/guide/en.html)。[旧デスクトップ版の英語ガイド](./LEGACY.md)。
+
+
 このページでは、組織連続切片（serial histological sections）の**自動位置合わせ（Registration）**を行う方法をまとめています。
 AlignRef は、**MultiStackReg などで自動位置合わせを行った “後に”** 微調整目的で使用するツールです。
 そのため、このページは AlignRef の README からリンクされる「前処理ガイド」として機能します。

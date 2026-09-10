@@ -1,5 +1,8 @@
 # 位置合わせ修正ツール AlignRef の使い方（日本語）
 
+> **Legacy workflow（従来方式）** — このページは旧 AlignRef と MultiStackReg を併用する手順です。過去の解析との互換性・再現性のため残しています。現在の推奨Web版は [AlignRef2](https://satorumuro.github.io/AlignRef/)。[日本語の使い方](https://satorumuro.github.io/AlignRef/guide/ja.html) / [English guide](https://satorumuro.github.io/AlignRef/guide/en.html)。[旧デスクトップ版の英語ガイド](./LEGACY.md)。
+
+
 ---
 
 > 🌐 **English version available here:**
