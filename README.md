@@ -67,6 +67,12 @@ The original **AlignRef + MultiStackReg** workflow remains available for reprodu
 - Original desktop guide and download: [English](./LEGACY.md) / [日本語](./README_JP.md)
 - MultiStackReg preparation: [English](./RegistrationGuide.md) / [日本語](./RegistrationGuide_JP.md)
 
+### Applications in published studies
+
+Kasamatsu et al. (2026). **Spatial, Histochemical, and Ultrastructural Analysis of Melanomacrophages in the Liver of the Red-Eared Slider (*Trachemys scripta elegans*).** *Anatomia, Histologia, Embryologia.* 55:e70178. [DOI](https://doi.org/10.1111/ahe.70178)
+
+The study used the original **AlignRef + Fiji/MultiStackReg** workflow: AlignRef provided manual adjustment of serial liver-section images after automatic registration with Fiji/MultiStackReg. SegRef3D was used to identify and segment structures, and final 3D reconstruction was performed in 3D Slicer (Methods, Section 2.2; Figure 2).
+
 ## Developer / technical information
 
 - [Web implementation, local development, tests and limitations](./web/README.md)
